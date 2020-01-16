@@ -23,19 +23,22 @@ class Universe(object):
 
 	def create_creature(self, x_position, y_position, screen):
 
-		random_velocity = random.randint(10, 20)
-		new_creature = Creature(self.window, x_position, y_position, screen.width, screen.height, random_velocity, self.creatures_size, self.creature_current_id)
+		random_velocity = random.randint(80, 100)
+		new_creature = Creature(self.window, x_position, y_position, screen.width, screen.height, 100, self.creatures_size, self.creature_current_id)
 		self.creatures.append(new_creature)
 		self.population += 1
 		pygame.draw.rect(self.window, (0,0,255), (x_position, y_position, 10, 10))	
 		self.creature_current_id += 1
 
-	def create_food(self, x_position, y_position, screen, quantity):
+	def create_food(self, screen, quantity):
 
 		for i in range(quantity):
 
-			new_food = Food(self.window, x_position, y_position, self.food_current_id)
+			x = random.randint(0, screen.width + 1)
+			y = random.randint(0,screen.height + 1)
+
+			new_food = Food(self.window, x, y, self.food_current_id)
 			self.food.append(new_food)
-			pygame.draw.rect(self.window, (0,255,0), (x_position, y_position, 10, 10))	
+			pygame.draw.rect(self.window, (0,255,0), (x, y, 10, 10))	
 			self.food_current_id += 1
 

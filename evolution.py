@@ -15,25 +15,46 @@ pygame.init()
 pygame.display.set_caption("Evolution")
 	
 
-run = True
+#create initial population
 
+universe.create_food(screen, 100)
+
+width = random.randint(0, screen.width + 1)
+height = random.randint(0,screen.height + 1)
+
+universe.create_creature(width, height, screen)
+
+width = random.randint(0, screen.width + 1)
+height = random.randint(0,screen.height + 1)
+
+universe.create_creature(width, height, screen)
+
+width = random.randint(0, screen.width + 1)
+height = random.randint(0,screen.height + 1)
+
+universe.create_creature(width, height, screen)
+
+food_wait = 10
+
+run = True
 while run:
 
 	window.fill((255,255,255))
 
-	#Create food and creatures
 	width = random.randint(0, screen.width + 1)
 	height = random.randint(0,screen.height + 1)
 
-	universe.create_creature(width, height, screen)
 
-	width = random.randint(0, screen.width + 1)
-	height = random.randint(0,screen.height + 1)
+	if food_wait <= 0:
 
-	universe.create_food(width, height, screen, 2)
+		universe.create_food(screen, 1)
+		food_wait = 10
+
+	food_wait -= 1
+
 	universe.count_cicles()
 
-	pygame.time.delay(100)
+	pygame.time.delay(10)
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -45,6 +66,7 @@ while run:
 	for creature in universe.creatures:
 
 		alive = creature.check_alive()
+
 		# Check life
 		if not alive:
 
@@ -71,32 +93,21 @@ while run:
 
 			if (abs(food_x - creature_x) <= 20) and (abs(food_y - creature_y) <= 20):
 
-				indice = 0
-				for f in universe.food:
-					if f.idnumber == food.idnumber:
-						universe.food.pop(indice)
-						creature.energy += 200
-
-				indice += 1
-
-
+				universe.food.remove(food)
+				break
+				
 	#Remove food
 	for food in universe.food:
 
 		edible = food.render()		
 		if not edible:
 
-			indice = 0
-			for f in universe.food:
-				if f.idnumber == food.idnumber:
-					universe.food.pop(indice)
-
-			indice += 1
+			universe.food.remove(food)
 
 	print("Population: ", universe.population)
 	pygame.display.update()
 
 	    
 pygame.quit()
-print("Population all times: ", universe.creature_current_id + 1)
+print("Population all times: ", universe.creature_current_id)
 print("Cicles: ", universe.cicles)
