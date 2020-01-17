@@ -19,12 +19,30 @@ class Universe(object):
 		self.cicles = 0
 
 	def count_cicles(self):
+
 		self.cicles += 1
 
-	def create_creature(self, x_position, y_position, screen):
+	def create_creature(self, x_position, y_position, screen, velocity, gender=None):
 
-		random_velocity = random.randint(80, 100)
-		new_creature = Creature(self.window, x_position, y_position, screen.width, screen.height, 100, self.creatures_size, self.creature_current_id)
+
+		if gender:
+			new_creature = Creature(self.window, x_position, y_position, screen.width, 
+				screen.height, velocity, self.creatures_size, self.creature_current_id, gender)
+		else:
+
+			creature_gender = None
+			gender_number = random.randint(1,3)
+
+			if gender_number == 1: 
+				creature_gender = "M" 
+
+			else: 
+				gender_number = "F"
+
+			new_creature = Creature(
+				self.window, x_position, y_position, screen.width, screen.height, 
+				velocity, self.creatures_size, self.creature_current_id, creature_gender)
+
 		self.creatures.append(new_creature)
 		self.population += 1
 		pygame.draw.rect(self.window, (0,0,255), (x_position, y_position, 10, 10))	

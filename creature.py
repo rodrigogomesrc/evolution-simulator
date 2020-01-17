@@ -3,7 +3,7 @@ import pygame
 
 class Creature(object):
 	
-	def __init__(self, window, x_position, y_position, screen_x, screen_y, velocity, size, idnumber):
+	def __init__(self, window, x_position, y_position, screen_x, screen_y, velocity, size, idnumber, gender):
 
 		self.window = window
 		self.x_position = x_position
@@ -13,7 +13,7 @@ class Creature(object):
 		self.screen_x = screen_x
 		self.screen_y = screen_y
 		self.velocity = 100 - velocity
-		self.life = 14400
+		self.life = 7200
 		self.size = size
 		self.moving = False
 		self.steps = 0
@@ -24,11 +24,19 @@ class Creature(object):
 		self.alive = True
 		self.cicles = 0
 		self.energy_expended = (velocity % 10)
+		self.gender = gender
+		self.can_reproduce = True
+		self.reproduction_wait = 1500
+		self.reproduction_age_start = 2000
+		self.reproduction_age_end = 6500
+		#create rules to if the creature can reproduce
+		#rules by age and energy
 
 	def move(self):
 
 		self.age()
 		self.use_energy(self.energy_expended)
+		self.check_reproduction()
 		self.cicles += 1
 
 		if self.wait <= 0:
@@ -162,3 +170,12 @@ class Creature(object):
 	def check_alive(self):
 
 		return self.alive
+
+	def check_reproduction(self):
+
+		if not self.can_reproduce:
+			self.reproduction_wait -= 1
+
+		if self.reproduction_wait == 0:
+			self.can_reproduce = True
+			self.reproduction_wait = 2000 
