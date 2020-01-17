@@ -14,32 +14,38 @@ class Creature(object):
 		self.screen_y = screen_y
 		self.velocity = 100 - velocity
 		self.life = 7200
+		self.age = 0
 		self.size = size
 		self.moving = False
 		self.steps = 0
 		self.walking_direction = 0
-		self.energy = 500
-		self.wait = ((100 - velocity) % 10)
+		self.energy = 10000
+		self.energy_max = 10000
+		self.wait_to_velocity = ((100 - velocity) // 10) 
 		self.idnumber = idnumber
 		self.alive = True
 		self.cicles = 0
-		self.energy_expended = (velocity % 10)
+		self.energy_expended = (velocity // 100)
 		self.gender = gender
-		self.can_reproduce = True
-		self.reproduction_wait = 1500
+		self.can_reproduce = False
+		self.time_without_reproduction = 0
+		self.reproduction_wait = 1000
 		self.reproduction_age_start = 2000
 		self.reproduction_age_end = 6500
-		#create rules to if the creature can reproduce
-		#rules by age and energy
+
+	def mutation(self):
+
+		mutation_range = random.randint(15, 31) - 15
+		self.life += mutation_range
 
 	def move(self):
 
-		self.age()
+		self.age_creature()
 		self.use_energy(self.energy_expended)
 		self.check_reproduction()
 		self.cicles += 1
 
-		if self.wait <= 0:
+		if self.wait_to_velocity <= 0:
 
 			moved = True
 
@@ -78,9 +84,9 @@ class Creature(object):
 			if not moved:
 				self.steps = 0
 
-			self.wait = ((100 - self.velocity) % 10)
+			self.wait_to_velocity = ((100 - self.velocity) % 10)
 
-		self.wait -= 1
+		self.wait_to_velocity -= 1
 
 		pygame.draw.rect(self.window, (0,0,255), (self.x_position, self.y_position, 10, 10))	
 
@@ -153,11 +159,11 @@ class Creature(object):
 
 		return False
 
-	def age(self):
+	def age_creature(self):
 
-		self.life -= 1
+		self.age += 1
 
-		if self.life <= 0:
+		if self.age >= self.life:
 			self.alive = False
 
 	def use_energy(self, quantity):
@@ -171,11 +177,29 @@ class Creature(object):
 
 		return self.alive
 
+	def eat(self):
+
+		if self.energy < self.energy_max:
+			self.energy += 100
+
 	def check_reproduction(self):
 
-		if not self.can_reproduce:
-			self.reproduction_wait -= 1
+		self.time_without_reproduction += 1
 
-		if self.reproduction_wait == 0:
+		if self.time_without_reproduction < self.reproduction_wait:
+			self.can_reproduce = False
+
+		elif self.energy < (self.energy_max / 2):
+			self.can_reproduce = False
+
+		elif self.age < self.reproduction_age_start:
+			self.can_reproduce = False
+
+		elif self.age > self.reproduction_age_end:
+			self.can_reproduce = False
+
+		elif self.time_without_reproduction < self.reproduction_wait:
+			self.can_reproduce = False
+
+		else:
 			self.can_reproduce = True
-			self.reproduction_wait = 2000 

@@ -12,18 +12,21 @@ pygame.init()
 
 pygame.display.set_caption("Evolution")
 
-max_population = 0
+population_record = 0
+
 #create initial population
 universe.create_food(screen, 100)
 
-for i in range(4):
+for i in range(10):
 
+	velocity = random.randint(70, 100)
 	width = random.randint(0, screen.width + 1)
 	height = random.randint(0,screen.height + 1)
-	universe.create_creature(width, height, screen, 100)
+	universe.create_creature(width, height, screen, velocity)
+	velocity = random.randint(70, 100)
 	width = random.randint(0, screen.width + 1)
 	height = random.randint(0,screen.height + 1)
-	universe.create_creature(width, height, screen, 100)
+	universe.create_creature(width, height, screen, velocity)
 
 food_wait = 10
 
@@ -35,7 +38,6 @@ while run:
 	width = random.randint(0, screen.width + 1)
 	height = random.randint(0,screen.height + 1)
 
-
 	if food_wait <= 0:
 
 		universe.create_food(screen, 1)
@@ -44,8 +46,6 @@ while run:
 	food_wait -= 1
 
 	universe.count_cicles()
-
-	#pygame.time.delay(5)
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -60,35 +60,28 @@ while run:
 		# Check life
 		if not alive:
 
-			indice = 0
 			for c in universe.creatures:
 				if c.idnumber == creature.idnumber:
-					universe.creatures.pop(indice)
+					universe.creatures.remove(creature)
 					universe.population -= 1
 					break
 
-				indice += 1
-
 		creature.move()
-
-		# change it to be as clean as the reproduction part
-
-		creature_x = creature.x_position
-		creature_y = creature.y_position
-
 
 		# Eat Food
 		for food in universe.food:
 
-			food_x = food.x_position
-			food_y = food.y_position
+			dx =  abs(food.x_position - creature.x_position)
+			dy =  abs(food.y_position - creature.y_position)
 
-			if (abs(food_x - creature_x) <= 20) and (abs(food_y - creature_y) <= 20):
+			if dx <= 20 and dy <= 20:
 
 				universe.food.remove(food)
+				creature.eat()
 				break
 
 	# Reproduction
+	reproducted = []
 
 	for creature in universe.creatures:
 
@@ -96,17 +89,28 @@ while run:
 
 			dx = abs(creature.x_position - c.x_position)
 			dy = abs(creature.y_position - c.y_position)
+			can_reproduce = c.can_reproduce and creature.can_reproduce and creature.idnumber not in reproducted and c.idnumber not in reproducted
+			can_reproduce2 = creature.gender != c.gender
 
-			if dx <= 20 and dy <= 20 and dx != 0 and dy != 0 and c.can_reproduce and creature.can_reproduce:
-
-				# make it so the male can alway reproduce and the female has a time until reproduction is alowed again
+			if dx <= 20 and dy <= 20 and dx != 0 and dy != 0 and can_reproduce:
 
 				x = random.randint(0, screen.width + 1)
-				y = random.randint(0,screen.height + 1)
+				y = random.randint(0, screen.height + 1)
 
-				c.can_reproduce = False
-				creature.can_reproduce = False
-				universe.create_creature(x, y, screen, 100)
+				gender = None
+				gender_number = random.randint(0,2)
+
+				if gender_number == 1:
+					gender = "M"
+
+				else:
+					gender = "F"
+
+				c.time_without_reproduction = 0
+				creature.time_without_reproduction = 0
+				reproducted.append(creature.idnumber)
+				reproducted.append(c.idnumber)
+				universe.create_creature(x, y, screen, 100, gender=gender)
 
 	#Remove food
 	for food in universe.food:
@@ -116,12 +120,19 @@ while run:
 
 			universe.food.remove(food)
 
-	if universe.population > max_population:
-		max_population = universe.population
-
 	print("Population: ", universe.population)
-	pygame.display.update()
 
+	if universe.population > population_record:
+		population_record = universe.population
+
+	if universe.population == 0:
+		print("Population extinct")
+		run = False
+
+	pygame.display.update()
 	    
 pygame.quit()
 print("Population all times: ", universe.creature_current_id)
+print("Population record: ", population_record)
+print("Cicles simulated: ", universe.cicles)
+print("Days simulated: %d" %(universe.cicles / 72))
