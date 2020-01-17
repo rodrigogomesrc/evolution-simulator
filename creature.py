@@ -12,6 +12,7 @@ class Creature(object):
 		self.x_position = x_position
 		self.screen_x = screen_x
 		self.screen_y = screen_y
+		self.original_velocity = velocity
 		self.velocity = 100 - velocity
 		self.life = 7200
 		self.age = 0
@@ -33,10 +34,19 @@ class Creature(object):
 		self.reproduction_age_start = 2000
 		self.reproduction_age_end = 6500
 
-	def mutation(self):
+		self.mutate()
 
-		mutation_range = random.randint(15, 31) - 15
-		self.life += mutation_range
+	def mutate(self):
+
+		life_mutation_range = ((random.randint(0, 30) - 15) / 100) * self.life
+		self.life += life_mutation_range
+
+		velocity_mutation_range = ((random.randint(0, 30) - 15) / 100) * self.life
+		self.velocity += velocity_mutation_range
+
+		if self.velocity < 0:
+			self.velocity = 0
+
 
 	def move(self):
 
@@ -88,7 +98,7 @@ class Creature(object):
 
 		self.wait_to_velocity -= 1
 
-		pygame.draw.rect(self.window, (0,0,255), (self.x_position, self.y_position, 10, 10))	
+		pygame.draw.rect(self.window, (2 * self.original_velocity, 0, 255), (self.x_position, self.y_position, 10, 10))	
 
 
 	def move_up(self):

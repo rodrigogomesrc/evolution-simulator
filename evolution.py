@@ -19,11 +19,11 @@ universe.create_food(screen, 100)
 
 for i in range(10):
 
-	velocity = random.randint(70, 100)
+	velocity = random.randint(30, 100)
 	width = random.randint(0, screen.width + 1)
 	height = random.randint(0,screen.height + 1)
 	universe.create_creature(width, height, screen, velocity)
-	velocity = random.randint(70, 100)
+	velocity = random.randint(30, 100)
 	width = random.randint(0, screen.width + 1)
 	height = random.randint(0,screen.height + 1)
 	universe.create_creature(width, height, screen, velocity)
@@ -110,7 +110,10 @@ while run:
 				creature.time_without_reproduction = 0
 				reproducted.append(creature.idnumber)
 				reproducted.append(c.idnumber)
-				universe.create_creature(x, y, screen, 100, gender=gender)
+
+				velocity = (creature.original_velocity + c.original_velocity) / 2
+
+				universe.create_creature(x, y, screen, velocity, gender=gender)
 
 	#Remove food
 	for food in universe.food:
