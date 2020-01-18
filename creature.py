@@ -190,7 +190,7 @@ class Creature(object):
 	def eat(self):
 
 		if self.energy < self.energy_max:
-			self.energy += 100
+			self.energy += 50
 
 	def check_reproduction(self):
 

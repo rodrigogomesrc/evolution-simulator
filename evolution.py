@@ -5,92 +5,91 @@ from universe import Universe
 from creature import Creature
 from food import Food
 
-screen = Screen()
-window = pygame.display.set_mode((screen.width, screen.height))
-universe = Universe(window, 10, 10)
-pygame.init()
+class Game(object):
 
-pygame.display.set_caption("Evolution")
+	def __init__(self):
 
-population_record = 0
-hungry_deaths = 0
-age_deaths = 0
+		self.screen = Screen()
+		self.window = pygame.display.set_mode((self.screen.width, self.screen.height))
+		self.universe = Universe(self.window, 10, 10)
+		self.population_record = 0
+		self.hungry_deaths = 0
+		self.age_deaths = 0
+		self.food_wait = 10
+		self.extinction = False
 
-#create initial population
-universe.create_food(screen, 100)
+		pygame.display.set_caption("Evolution")
+		pygame.init()
 
-for i in range(30):
+	def start_world(self):
 
-	velocity = random.randint(30, 100)
-	width = random.randint(0, screen.width + 1)
-	height = random.randint(0,screen.height + 1)
-	universe.create_creature(width, height, screen, velocity)
+		self.universe.create_food(self.screen, 100)
 
-	velocity = random.randint(30, 100)
-	width = random.randint(0, screen.width + 1)
-	height = random.randint(0,screen.height + 1)
-	universe.create_creature(width, height, screen, velocity)
+		for i in range(1):
 
-food_wait = 10
+			velocity = random.randint(30, 100)
+			width = random.randint(0, self.screen.width + 1)
+			height = random.randint(0,self.screen.height + 1)
+			self.universe.create_creature(width, height, self.screen, velocity)
 
-run = True
-while run:
+			velocity = random.randint(30, 100)
+			width = random.randint(0, self.screen.width + 1)
+			height = random.randint(0, self.screen.height + 1)
+			self.universe.create_creature(width, height, self.screen, velocity)
 
-	window.fill((255,255,255))
+			self.loop()
 
-	width = random.randint(0, screen.width + 1)
-	height = random.randint(0,screen.height + 1)
+	def spawn_food(self):
 
-	if food_wait <= 0:
+		width = random.randint(0, self.screen.width + 1)
+		height = random.randint(0, self.screen.height + 1)
 
-		universe.create_food(screen, 1)
-		food_wait = 10
+		if self.food_wait <= 0:
 
-	food_wait -= 1
+			self.universe.create_food(self.screen, 1)
+			self.food_wait = 10
 
-	universe.count_cicles()
-
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			run = False
+		
+	def counters(self):
+		self.food_wait -= 1
+		self.universe.count_cicles()
 
 
-	reproducted = []
-	
-	#Move creatures, eat food and check life
-	for creature in universe.creatures:
+	def check_creatures_lifes(self, creature):
 
 		alive = creature.check_alive()
 
-		# Check life
 		if not alive:
 
 			if creature.energy <= 0:
-				hungry_deaths += 1
+				self.hungry_deaths += 1
 
 			else:
-				age_deaths += 1
+				self.age_deaths += 1
 
-			universe.creatures.remove(creature)
-			universe.population -= 1
-			break
+			self.universe.creatures.remove(creature)
+			self.universe.population -= 1
 
-		creature.move()
 
-		# Eat Food
-		for food in universe.food:
+	def check_if_ate(self, creature):
+
+		for food in self.universe.food:
 
 			dx = abs(food.x_position - creature.x_position)
 			dy = abs(food.y_position - creature.y_position)
 
 			if dx <= 20 and dy <= 20:
 
-				universe.food.remove(food)
+				self.universe.food.remove(food)
 				creature.eat()
 				break
 
-		# Reproduction
-		for c in universe.creatures:
+
+	def check_reproduction(self, creature):
+		
+		reproducted = []
+			
+		for c in self.universe.creatures:
 
 			dx = abs(creature.x_position - c.x_position)
 			dy = abs(creature.y_position - c.y_position)
@@ -99,8 +98,8 @@ while run:
 
 			if dx <= 20 and dy <= 20 and dx != 0 and dy != 0 and can_reproduce:
 
-				x = random.randint(0, screen.width + 1)
-				y = random.randint(0, screen.height + 1)
+				x = random.randint(0, self.screen.width + 1)
+				y = random.randint(0, self.screen.height + 1)
 
 				gender = None
 				gender_number = random.randint(0,2)
@@ -118,35 +117,73 @@ while run:
 
 				velocity = (creature.original_velocity + c.original_velocity) / 2
 
-				universe.create_creature(x, y, screen, velocity, gender=gender)
-		
-	#Remove food
-	for food in universe.food:
-
-		expired = food.expired	
-
-		if expired:
-			universe.food.remove(food)
-
-		else:
-			food.render()
+				self.universe.create_creature(x, y, self.screen, velocity, gender=gender)
 
 
-	print("Population: ", universe.population)
+	def check_food(self):
 
-	if universe.population > population_record:
-		population_record = universe.population
+		for food in self.universe.food:
 
-	if universe.population == 0:
-		print("Population extinct")
-		run = False
+			expired = food.expired	
 
-	pygame.display.update()
+			if expired:
+				self.universe.food.remove(food)
+
+			else:
+				food.render()
+
+
+	def checks(self):
+
+		for creature in self.universe.creatures:
+			
+			self.check_creatures_lifes(creature)
+			creature.move()
+			self.check_if_ate(creature)
+			self.check_reproduction(creature)
+	
+		self.check_food()
+
+
+	def loop(self):
+
+
+		self.window.fill((255,255,255))
+		self.spawn_food()
+		self.counters()
+		self.checks()
+
+		print("Population: ", self.universe.population)
+
+		if self.universe.population > self.population_record:
+			self.population_record = self.universe.population
+
+		if self.universe.population == 0:
+			self.extinction = True
+
+		pygame.display.update()
+			
 	    
 pygame.quit()
-print("Population all times: ", universe.creature_current_id)
-print("Population record: ", population_record)
-print("Cicles simulated: ", universe.cicles)
-print("Hungry deaths: ", hungry_deaths)
-print("age_deaths: ", age_deaths)
-print("Days simulated: %d" %(universe.cicles / 72))
+
+game = Game()
+game.start_world()
+
+run = True
+while run:
+
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:	
+			run = False
+
+	game.loop()
+	if game.extinction == True:
+		break
+
+
+print("Population all times: ", game.universe.creature_current_id)
+print("Population record: ", game.population_record)
+print("Cicles simulated: ", game.universe.cicles)
+print("Hungry deaths: ", game.hungry_deaths)
+print("age_deaths: ", game.age_deaths)
+print("Days simulated: %d" %(game.universe.cicles / 72))
