@@ -13,16 +13,19 @@ pygame.init()
 pygame.display.set_caption("Evolution")
 
 population_record = 0
+hungry_deaths = 0
+age_deaths = 0
 
 #create initial population
 universe.create_food(screen, 100)
 
-for i in range(10):
+for i in range(30):
 
 	velocity = random.randint(30, 100)
 	width = random.randint(0, screen.width + 1)
 	height = random.randint(0,screen.height + 1)
 	universe.create_creature(width, height, screen, velocity)
+
 	velocity = random.randint(30, 100)
 	width = random.randint(0, screen.width + 1)
 	height = random.randint(0,screen.height + 1)
@@ -51,6 +54,8 @@ while run:
 		if event.type == pygame.QUIT:
 			run = False
 
+
+	reproducted = []
 	
 	#Move creatures, eat food and check life
 	for creature in universe.creatures:
@@ -60,19 +65,23 @@ while run:
 		# Check life
 		if not alive:
 
-			for c in universe.creatures:
-				if c.idnumber == creature.idnumber:
-					universe.creatures.remove(creature)
-					universe.population -= 1
-					break
+			if creature.energy <= 0:
+				hungry_deaths += 1
+
+			else:
+				age_deaths += 1
+
+			universe.creatures.remove(creature)
+			universe.population -= 1
+			break
 
 		creature.move()
 
 		# Eat Food
 		for food in universe.food:
 
-			dx =  abs(food.x_position - creature.x_position)
-			dy =  abs(food.y_position - creature.y_position)
+			dx = abs(food.x_position - creature.x_position)
+			dy = abs(food.y_position - creature.y_position)
 
 			if dx <= 20 and dy <= 20:
 
@@ -80,11 +89,7 @@ while run:
 				creature.eat()
 				break
 
-	# Reproduction
-	reproducted = []
-
-	for creature in universe.creatures:
-
+		# Reproduction
 		for c in universe.creatures:
 
 			dx = abs(creature.x_position - c.x_position)
@@ -114,14 +119,18 @@ while run:
 				velocity = (creature.original_velocity + c.original_velocity) / 2
 
 				universe.create_creature(x, y, screen, velocity, gender=gender)
-
+		
 	#Remove food
 	for food in universe.food:
 
-		edible = food.render()		
-		if not edible:
+		expired = food.expired	
 
+		if expired:
 			universe.food.remove(food)
+
+		else:
+			food.render()
+
 
 	print("Population: ", universe.population)
 
@@ -138,4 +147,6 @@ pygame.quit()
 print("Population all times: ", universe.creature_current_id)
 print("Population record: ", population_record)
 print("Cicles simulated: ", universe.cicles)
+print("Hungry deaths: ", hungry_deaths)
+print("age_deaths: ", age_deaths)
 print("Days simulated: %d" %(universe.cicles / 72))

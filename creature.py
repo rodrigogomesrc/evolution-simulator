@@ -26,7 +26,7 @@ class Creature(object):
 		self.idnumber = idnumber
 		self.alive = True
 		self.cicles = 0
-		self.energy_expended = (velocity // 100)
+		self.energy_expended = (velocity // 30)
 		self.gender = gender
 		self.can_reproduce = False
 		self.time_without_reproduction = 0
