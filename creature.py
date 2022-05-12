@@ -48,7 +48,7 @@ class Creature(object):
 			self.velocity = 0
 
 
-	def move(self):
+	def move(self, render=False):
 
 		self.age_creature()
 		self.use_energy(self.energy_expended)
@@ -98,7 +98,8 @@ class Creature(object):
 
 		self.wait_to_velocity -= 1
 
-		pygame.draw.rect(self.window, (2 * self.original_velocity, 0, 255), (self.x_position, self.y_position, 10, 10))	
+		if(render):
+			pygame.draw.rect(self.window, (2 * self.original_velocity, 0, 255), (self.x_position, self.y_position, 10, 10))	
 
 
 	def move_up(self):

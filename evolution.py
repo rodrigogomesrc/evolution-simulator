@@ -17,15 +17,22 @@ class Game(object):
 		self.age_deaths = 0
 		self.food_wait = 10
 		self.extinction = False
+		self.position_matrix = []
 
+		self.init_matrix()
 		pygame.display.set_caption("Evolution")
 		pygame.init()
+
+	def init_matrix():
+		for i in range(self.screen.height):
+			for j in range(self.screen.width):
+				self.position_matrix[i][j] = 0
 
 	def start_world(self):
 
 		self.universe.create_food(self.screen, 100)
 
-		for i in range(1):
+		for i in range(100):
 
 			velocity = random.randint(30, 100)
 			width = random.randint(0, self.screen.width + 1)
@@ -133,12 +140,12 @@ class Game(object):
 				food.render()
 
 
-	def checks(self):
+	def checks(self, render=False):
 
 		for creature in self.universe.creatures:
 			
 			self.check_creatures_lifes(creature)
-			creature.move()
+			creature.move(render)
 			self.check_if_ate(creature)
 			self.check_reproduction(creature)
 	
@@ -148,12 +155,20 @@ class Game(object):
 	def loop(self):
 
 
-		self.window.fill((255,255,255))
+		if((game.universe.cicles % 72) == 0):
+			self.window.fill((255,255,255))
+
 		self.spawn_food()
 		self.counters()
-		self.checks()
+		
 
-		print("Population: ", self.universe.population)
+		if((game.universe.cicles % 72) == 0):
+			self.checks(True)
+			print("Population: ", self.universe.population)
+			print("Day: %d" %(game.universe.cicles / 72))
+
+		else:
+			self.checks(False)
 
 		if self.universe.population > self.population_record:
 			self.population_record = self.universe.population
@@ -161,7 +176,8 @@ class Game(object):
 		if self.universe.population == 0:
 			self.extinction = True
 
-		pygame.display.update()
+		if((game.universe.cicles % 72) == 0):
+			pygame.display.update()
 			
 	    
 pygame.quit()
