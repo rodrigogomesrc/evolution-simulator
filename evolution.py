@@ -4,6 +4,8 @@ from screen import Screen
 from universe import Universe
 from creature import Creature
 from food import Food
+import threading
+import time
 
 class Game(object):
 
@@ -18,16 +20,13 @@ class Game(object):
 		self.food_wait = 10
 		self.extinction = False
 		self.position_matrix = []
-
 		self.init_matrix()
 		pygame.display.set_caption("Evolution")
 		pygame.init()
 
 	def init_matrix(self):
 		line = [0 for i in range(self.screen.height)]
-		print(len(line))
 		self.position_matrix = [line for i in range(self.screen.width)]
-		print(len(self.position_matrix))
 
 	def start_world(self):
 
@@ -152,21 +151,15 @@ class Game(object):
 	
 		self.check_food()
 
+	def print_stats(self):
+		print("Population: ", self.universe.population)x = threading.Thread(target=self.print_stats)
+			x.start()
 
-	def loop(self):
-
-
-		if((game.universe.cicles % 72) == 0):
-			self.window.fill((255,255,255))
-
-		self.spawn_food()
-		self.counters()
-		
 
 		if((game.universe.cicles % 72) == 0):
 			self.checks(True)
-			print("Population: ", self.universe.population)
-			print("Day: %d" %(game.universe.cicles / 72))
+			x = threading.Thread(target=self.print_stats)
+			x.start()
 
 		else:
 			self.checks(False)
@@ -187,6 +180,16 @@ game = Game()
 game.start_world()
 
 run = True
+
+def show_paramaters(name):
+    print("Thread %s: starting", name)
+    time.sleep(2)
+
+
+#it needs to have the comma after the args
+#x = threading.Thread(target=thread_function, args=("teste", ))
+#x.start()
+
 while run:
 
 	for event in pygame.event.get():
@@ -198,9 +201,11 @@ while run:
 		break
 
 
+'''
 print("Population all times: ", game.universe.creature_current_id)
 print("Population record: ", game.population_record)
 print("Cicles simulated: ", game.universe.cicles)
 print("Hungry deaths: ", game.hungry_deaths)
 print("age_deaths: ", game.age_deaths)
 print("Days simulated: %d" %(game.universe.cicles / 72))
+'''
