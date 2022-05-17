@@ -23,10 +23,11 @@ class Game(object):
 		pygame.display.set_caption("Evolution")
 		pygame.init()
 
-	def init_matrix():
-		for i in range(self.screen.height):
-			for j in range(self.screen.width):
-				self.position_matrix[i][j] = 0
+	def init_matrix(self):
+		line = [0 for i in range(self.screen.height)]
+		print(len(line))
+		self.position_matrix = [line for i in range(self.screen.width)]
+		print(len(self.position_matrix))
 
 	def start_world(self):
 
