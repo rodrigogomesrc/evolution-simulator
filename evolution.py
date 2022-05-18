@@ -6,6 +6,7 @@ from creature import Creature
 from food import Food
 import threading
 import time
+from timeit import default_timer as timer
 
 class Game(object):
 
@@ -21,8 +22,12 @@ class Game(object):
 		self.extinction = False
 		self.position_matrix = []
 		self.init_matrix()
+
 		pygame.display.set_caption("Evolution")
 		pygame.init()
+
+		self.cicle_time = 0
+		self.total_cicle_time = 0
 
 	def init_matrix(self):
 		line = [0 for i in range(self.screen.height)]
@@ -31,6 +36,7 @@ class Game(object):
 	def start_world(self):
 
 		self.universe.create_food(self.screen, 100)
+		self.cicle_time = timer()
 
 		for i in range(100):
 
@@ -85,7 +91,7 @@ class Game(object):
 			dx = abs(food.x_position - creature.x_position)
 			dy = abs(food.y_position - creature.y_position)
 
-			if dx <= 20 and dy <= 20:
+			if dx <= 20 and dy <= 20:			
 
 				self.universe.food.remove(food)
 				creature.eat()
@@ -93,7 +99,7 @@ class Game(object):
 
 
 	def check_reproduction(self, creature):
-		
+
 		reproducted = []
 			
 		for c in self.universe.creatures:
@@ -151,13 +157,18 @@ class Game(object):
 	
 		self.check_food()
 
-	def print_stats(self):
-		print("Population: ", self.universe.population)x = threading.Thread(target=self.print_stats)
-			x.start()
+	def loop(self):
 
+		if((game.universe.cicles % 72) == 0):
+			self.window.fill((255,255,255))
+
+		self.spawn_food()
+		self.counters()
 
 		if((game.universe.cicles % 72) == 0):
 			self.checks(True)
+			self.evaluate_cicle_time()
+			pygame.display.update()
 			x = threading.Thread(target=self.print_stats)
 			x.start()
 
@@ -170,9 +181,17 @@ class Game(object):
 		if self.universe.population == 0:
 			self.extinction = True
 
-		if((game.universe.cicles % 72) == 0):
-			pygame.display.update()
+	def evaluate_cicle_time(self):
+		self.total_cicle_time = 0
+		self.total_cicle_time = timer() - self.cicle_time
+		self.cicle_time = timer()
 			
+
+	def print_stats(self):
+		print("Population: ", self.universe.population)
+		print("Day: %d" %(game.universe.cicles / 72))
+		print("Time: %.5f" %(self.total_cicle_time))
+		
 	    
 pygame.quit()
 
@@ -180,15 +199,6 @@ game = Game()
 game.start_world()
 
 run = True
-
-def show_paramaters(name):
-    print("Thread %s: starting", name)
-    time.sleep(2)
-
-
-#it needs to have the comma after the args
-#x = threading.Thread(target=thread_function, args=("teste", ))
-#x.start()
 
 while run:
 
