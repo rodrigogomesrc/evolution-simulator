@@ -50,13 +50,6 @@ class Game(object):
 
 			velocity = random.randint(30, 100)
 			x, y = x, y = self.get_random_position()
-
-			if(x >= 1000):
-				print("--WIDTH ", x)
-			
-			if(y >= 600):
-				print("--HEIGHT", y)
-
 			self.universe.create_creature(x, y, self.screen, velocity)
 
 			self.loop()
@@ -65,18 +58,16 @@ class Game(object):
 
 		x, y = self.get_random_position()
 
-		if(x >= 1000):
-			print("--WIDTH ", x)
-			
-		if(y >= 600):
-			print("--HEIGHT", y)
-
-
 		if self.food_wait <= 0:
-
 			self.universe.create_food(x, y)
 			self.food_wait = 10
+			
 
+	def remove_food(self, food_id):
+		self.universe.remove_food(food_id)
+
+	def remove_creature(self, creature_id):
+		self.universe.remove_creature(creature_id)
 		
 	def counters(self):
 		self.food_wait -= 1
@@ -95,6 +86,7 @@ class Game(object):
 			else:
 				self.age_deaths += 1
 
+			#remove creature
 			self.universe.creatures.remove(creature)
 			self.universe.population -= 1
 
@@ -108,6 +100,7 @@ class Game(object):
 
 			if dx <= 20 and dy <= 20:			
 
+				#remove food
 				self.universe.food.remove(food)
 				creature.eat()
 				break
@@ -153,6 +146,7 @@ class Game(object):
 			expired = food.expired	
 
 			if expired:
+				#remove food
 				self.universe.food.remove(food)
 
 			else:

@@ -26,6 +26,12 @@ class Universe(object):
 
 		self.init_matrix()
 
+	def remove_food(self, food_id):
+		pass
+
+	def remove_creature(self, creature_id):
+		pass
+
 	def init_matrix(self):
 		line = [0 for i in range(self.screen.height)]
 		self.position_matrix = [line for i in range(self.screen.width)]
@@ -69,12 +75,7 @@ class Universe(object):
 		self.food.append(new_food)
 
 		#after dict implementation
-		print((x, y))
-		#print(len(self.food_position_matrix))
-		#print(len(self.food_position_matrix[0]))
-
 		self.food_dict[self.food_current_id] = new_food
-
 		self.food_position_matrix[x][y] = self.food_current_id
 
 		pygame.draw.rect(self.window, (0,255,0), (x, y, 10, 10))	
