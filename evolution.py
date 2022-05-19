@@ -61,13 +61,13 @@ class Game(object):
 		if self.food_wait <= 0:
 			self.universe.create_food(x, y)
 			self.food_wait = 10
-			
 
-	def remove_food(self, food_id):
-		self.universe.remove_food(food_id)
 
-	def remove_creature(self, creature_id):
-		self.universe.remove_creature(creature_id)
+	def remove_food(self, food):
+		self.universe.remove_food(food)
+
+	def remove_creature(self, creature):
+		self.universe.remove_creature(creature)
 		
 	def counters(self):
 		self.food_wait -= 1

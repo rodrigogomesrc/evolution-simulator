@@ -188,6 +188,15 @@ class Creature(object):
 
 		return self.alive
 
+	def get_id(self):
+		return self.idnumber
+
+	def get_x_position(self)
+		return self.x_position
+
+	def get_y_position(self)
+		return self.y_position
+
 	def eat(self):
 
 		if self.energy < self.energy_max:

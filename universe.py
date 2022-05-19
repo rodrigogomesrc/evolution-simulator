@@ -26,11 +26,15 @@ class Universe(object):
 
 		self.init_matrix()
 
-	def remove_food(self, food_id):
-		pass
+	def remove_food(self, food):
+		food_id = food.get_id()
+		del self.food_dict[food_id]
+		self.food_position_matrix[food.get_x_position()][food.get_y_position()] = 0
 
-	def remove_creature(self, creature_id):
-		pass
+	def remove_creature(self, creature):
+		creature_id = creature.get_id()
+		del self.creatures_dict[creature_id]
+		self.position_matrix[creature.get_x_position()][creature.get_y_position()]
 
 	def init_matrix(self):
 		line = [0 for i in range(self.screen.height)]
@@ -38,12 +42,9 @@ class Universe(object):
 		self.food_position_matrix = self.position_matrix
 
 	def count_cicles(self):
-
 		self.cicles += 1
 
 	def create_creature(self, x_position, y_position, screen, velocity, gender=None):
-
-
 		if gender:
 			new_creature = Creature(self.window, x_position, y_position, screen.width, 
 				screen.height, velocity, self.creatures_size, self.creature_current_id, gender)
@@ -58,7 +59,6 @@ class Universe(object):
 		self.creatures.append(new_creature)
 
 		#after implementing dict logic
-		print((x_position, y_position))
 		self.creatures_dict[self.creature_current_id] = new_creature
 		self.position_matrix[x_position][y_position] = self.creature_current_id
 
