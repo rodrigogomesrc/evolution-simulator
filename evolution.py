@@ -27,33 +27,54 @@ class Game(object):
 		self.cicle_time = 0
 		self.total_cicle_time = 0
 
+	def get_random_position(self):
+		x = random.randint(0, self.screen.width -1)
+		y = random.randint(0, self.screen.height -1)
+		return x, y
+
 	def start_world(self):
 
-		self.universe.create_food(self.screen, 100)
+
+		for i in range(100):
+			x, y = self.get_random_position()
+			self.universe.create_food(x, y)
+
+
 		self.cicle_time = timer()
 
 		for i in range(100):
 
 			velocity = random.randint(30, 100)
-			width = random.randint(0, self.screen.width + 1)
-			height = random.randint(0,self.screen.height + 1)
-			self.universe.create_creature(width, height, self.screen, velocity)
+			x, y = x, y = self.get_random_position()
+			self.universe.create_creature(x, y, self.screen, velocity)
 
 			velocity = random.randint(30, 100)
-			width = random.randint(0, self.screen.width + 1)
-			height = random.randint(0, self.screen.height + 1)
-			self.universe.create_creature(width, height, self.screen, velocity)
+			x, y = x, y = self.get_random_position()
+
+			if(x >= 1000):
+				print("--WIDTH ", x)
+			
+			if(y >= 600):
+				print("--HEIGHT", y)
+
+			self.universe.create_creature(x, y, self.screen, velocity)
 
 			self.loop()
 
 	def spawn_food(self):
 
-		width = random.randint(0, self.screen.width + 1)
-		height = random.randint(0, self.screen.height + 1)
+		x, y = self.get_random_position()
+
+		if(x >= 1000):
+			print("--WIDTH ", x)
+			
+		if(y >= 600):
+			print("--HEIGHT", y)
+
 
 		if self.food_wait <= 0:
 
-			self.universe.create_food(self.screen, 1)
+			self.universe.create_food(x, y)
 			self.food_wait = 10
 
 		
@@ -105,9 +126,7 @@ class Game(object):
 
 			if dx <= 20 and dy <= 20 and dx != 0 and dy != 0 and can_reproduce:
 
-				x = random.randint(0, self.screen.width + 1)
-				y = random.randint(0, self.screen.height + 1)
-
+				x, y = self.get_random_position()
 				gender = None
 				gender_number = random.randint(0,2)
 
