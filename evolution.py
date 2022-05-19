@@ -68,6 +68,7 @@ class Game(object):
 
 	def remove_creature(self, creature):
 		self.universe.remove_creature(creature)
+		self.universe.population -= 1
 		
 	def counters(self):
 		self.food_wait -= 1
@@ -87,9 +88,9 @@ class Game(object):
 				self.age_deaths += 1
 
 			#remove creature
-			self.universe.creatures.remove(creature)
-			self.universe.population -= 1
-
+			self.remove_creature(food)
+			#self.universe.creatures.remove(creature)
+		
 
 	def check_if_ate(self, creature):
 
@@ -101,7 +102,8 @@ class Game(object):
 			if dx <= 20 and dy <= 20:			
 
 				#remove food
-				self.universe.food.remove(food)
+				self.remove_food(food)
+				#self.universe.food.remove(food)
 				creature.eat()
 				break
 
@@ -147,7 +149,8 @@ class Game(object):
 
 			if expired:
 				#remove food
-				self.universe.food.remove(food)
+				self.remove_food(food)
+				#self.universe.food.remove(food)
 
 			else:
 				if((game.universe.cicles % 72) == 0):
@@ -155,6 +158,11 @@ class Game(object):
 
 
 	def checks(self, render=False):
+
+		'''
+		for id, creature in self.universe.creatures:
+			
+		'''
 
 		for creature in self.universe.creatures:
 			

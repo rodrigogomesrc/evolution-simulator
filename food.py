@@ -26,8 +26,8 @@ class Food(object):
 	def get_id(self):
 		return self.idnumber
 
-	def get_x_position(self)
+	def get_x_position(self):
 		return self.x_position
 
-	def get_y_position(self)
+	def get_y_position(self):
 		return self.y_position

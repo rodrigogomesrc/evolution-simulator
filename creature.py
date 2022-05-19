@@ -49,7 +49,7 @@ class Creature(object):
 
 
 	def move(self, render=False):
-
+		
 		self.age_creature()
 		self.use_energy(self.energy_expended)
 		self.check_reproduction()
@@ -178,23 +178,20 @@ class Creature(object):
 			self.alive = False
 
 	def use_energy(self, quantity):
-
 		self.energy -= quantity
-
 		if self.energy <= 0:
 			self.alive = False
 
 	def check_alive(self):
-
 		return self.alive
 
 	def get_id(self):
 		return self.idnumber
 
-	def get_x_position(self)
+	def get_x_position(self):
 		return self.x_position
 
-	def get_y_position(self)
+	def get_y_position(self):
 		return self.y_position
 
 	def eat(self):
