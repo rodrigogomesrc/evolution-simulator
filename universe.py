@@ -5,7 +5,7 @@ from food import Food
 
 class Universe(object):
 	
-	def __init__(self, window, velocity, creatures_size):
+	def __init__(self, window, velocity, creatures_size, screen):
 
 		self.window = window
 		self.velocity = velocity
@@ -17,6 +17,13 @@ class Universe(object):
 		self.food_current_id = 0
 		self.creature_current_id = 0
 		self.cicles = 0
+		self.screen = screen
+		self.position_matrix = []
+		self.init_matrix()
+
+	def init_matrix(self):
+		line = [0 for i in range(self.screen.height)]
+		self.position_matrix = [line for i in range(self.screen.width)]
 
 	def count_cicles(self):
 

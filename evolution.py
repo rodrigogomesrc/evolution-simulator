@@ -14,24 +14,18 @@ class Game(object):
 
 		self.screen = Screen()
 		self.window = pygame.display.set_mode((self.screen.width, self.screen.height))
-		self.universe = Universe(self.window, 10, 10)
+		self.universe = Universe(self.window, 10, 10, self.screen)
 		self.population_record = 0
 		self.hungry_deaths = 0
 		self.age_deaths = 0
 		self.food_wait = 10
 		self.extinction = False
-		self.position_matrix = []
-		self.init_matrix()
 
 		pygame.display.set_caption("Evolution")
 		pygame.init()
 
 		self.cicle_time = 0
 		self.total_cicle_time = 0
-
-	def init_matrix(self):
-		line = [0 for i in range(self.screen.height)]
-		self.position_matrix = [line for i in range(self.screen.width)]
 
 	def start_world(self):
 
@@ -143,7 +137,8 @@ class Game(object):
 				self.universe.food.remove(food)
 
 			else:
-				food.render()
+				if((game.universe.cicles % 72) == 0):
+					food.render()
 
 
 	def checks(self, render=False):
