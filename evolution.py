@@ -5,7 +5,6 @@ from universe import Universe
 from creature import Creature
 from food import Food
 import threading
-import time
 from timeit import default_timer as timer
 
 class Game(object):
@@ -42,16 +41,11 @@ class Game(object):
 
 		self.cicle_time = timer()
 
-		for i in range(100):
+		for i in range(200):
 
 			velocity = random.randint(30, 100)
 			x, y = x, y = self.get_random_position()
 			self.universe.create_creature(x, y, self.screen, velocity)
-
-			velocity = random.randint(30, 100)
-			x, y = x, y = self.get_random_position()
-			self.universe.create_creature(x, y, self.screen, velocity)
-
 			self.loop()
 
 	def spawn_food(self):
@@ -68,17 +62,21 @@ class Game(object):
 
 	def remove_creature(self, creature):
 		self.universe.remove_creature(creature)
-		self.universe.population -= 1
 		
 	def counters(self):
 		self.food_wait -= 1
 		self.universe.count_cicles()
 
+	def check_if_coordenates_inside_screen(self, x, y):
+		if(x >= self.screen.width):
+			return False
+		elif(y >= self.screen.height):
+			return False
+		else:
+			return True
 
 	def check_creatures_lifes(self, creature):
-
 		alive = creature.check_alive()
-
 		if not alive:
 
 			if creature.energy <= 0:
@@ -86,25 +84,54 @@ class Game(object):
 
 			else:
 				self.age_deaths += 1
-
-			#remove creature
 			self.remove_creature(creature)
-			#self.universe.creatures.remove(creature)
+
+
+	def make_creature_eat(self, creature, food_position):
+		food = self.universe.food_dict[food_position]
+		self.remove_food(food)
+		creature.eat()
 		
+	def handle_creature_close_to_food(self, creature, x, y):
+		food_matrix = self.universe.food_position_matrix
+
+		if(self.check_if_coordenates_inside_screen(x,y)):
+			food_position = food_matrix[x][y]
+			if (food_position != 0 and food_position in self.universe.food_dict.keys()):
+				self.make_creature_eat(creature, food_position)
+				return True
+			return False
+
 
 	def check_if_ate(self, creature):
+		x = creature.get_x()
+		y = creature.get_y()
 
-		food_dict = self.universe.food_dict.copy()
-		for id, food in food_dict.items():
-
-			dx = abs(food.x_position - creature.x_position)
-			dy = abs(food.y_position - creature.y_position)
-
-			if dx <= 20 and dy <= 20:			
-
-				self.remove_food(food)
-				creature.eat()
-				break
+		ate = self.handle_creature_close_to_food(creature, x, y)
+		if(ate):
+			return
+		ate = self.handle_creature_close_to_food(creature, x, y + 1)
+		if(ate):
+			return
+		ate = self.handle_creature_close_to_food(creature, x, y + -1)
+		if(ate):
+			return
+		ate = self.handle_creature_close_to_food(creature, x + 1, y)
+		if(ate):
+			return
+		ate = self.handle_creature_close_to_food(creature, x - 1, y)
+		if(ate):
+			return
+		ate = self.handle_creature_close_to_food(creature, x - 1, y - 1)
+		if(ate):
+			return
+		ate = self.handle_creature_close_to_food(creature, x + 1, y + 1)
+		if(ate):
+			return
+		ate = self.handle_creature_close_to_food(creature, x + 1, y - 1)
+		if(ate):
+			return
+		ate = self.handle_creature_close_to_food(creature, x - 1, y + 1)
 
 
 	def check_reproduction(self, creature):
@@ -143,13 +170,11 @@ class Game(object):
 	def check_food(self):
 
 		for food in self.universe.food:
-
 			expired = food.expired	
 
 			if expired:
-				#remove food
 				self.remove_food(food)
-				#self.universe.food.remove(food)
+			
 
 			else:
 				if((game.universe.cicles % 72) == 0):
@@ -164,7 +189,7 @@ class Game(object):
 			
 			self.check_creatures_lifes(creature)
 			self.move_creature(creature, id, render)
-			#self.check_if_ate(creature)
+			self.check_if_ate(creature)
 			#self.check_reproduction(creature)
 	
 		#self.check_food()
