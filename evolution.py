@@ -4,7 +4,6 @@ from screen import Screen
 from universe import Universe
 from creature import Creature
 from food import Food
-import threading
 from timeit import default_timer as timer
 
 class Game(object):
@@ -33,20 +32,16 @@ class Game(object):
 
 	def start_world(self):
 
-
 		for i in range(100):
 			x, y = self.get_random_position()
 			self.universe.create_food(x, y)
 
-
 		self.cicle_time = timer()
-
 		for i in range(200):
 
 			velocity = random.randint(30, 100)
 			x, y = x, y = self.get_random_position()
 			self.universe.create_creature(x, y, self.screen, velocity)
-			self.loop()
 
 	def spawn_food(self):
 
@@ -97,9 +92,12 @@ class Game(object):
 
 		if(self.check_if_coordenates_inside_screen(x,y)):
 			food_position = food_matrix[x][y]
-			if (food_position != 0 and food_position in self.universe.food_dict.keys()):
-				self.make_creature_eat(creature, food_position)
-				return True
+			if (food_position != 0 and food_position):
+				try:
+					self.make_creature_eat(creature, food_position)
+					return True
+				except:
+					pass
 			return False
 
 
@@ -183,9 +181,8 @@ class Game(object):
 
 	def checks(self, render=False):
 
-		creatures = self.universe.creatures_dict.copy()
-
-		for id, creature in creatures.items():
+		creatures = self.universe.creatures_dict.copy().items()
+		for id, creature in creatures:
 			
 			self.check_creatures_lifes(creature)
 			self.move_creature(creature, id, render)
@@ -206,19 +203,16 @@ class Game(object):
 
 		if((game.universe.cicles % 72) == 0):
 			self.window.fill((255,255,255))
-
-		self.spawn_food()
-		self.counters()
-
-		if((game.universe.cicles % 72) == 0):
 			self.checks(True)
 			self.evaluate_cicle_time()
 			pygame.display.update()
-			x = threading.Thread(target=self.print_stats)
-			x.start()
+			self.print_stats()
 
 		else:
 			self.checks(False)
+
+		self.spawn_food()
+		self.counters()
 
 		if self.universe.population > self.population_record:
 			self.population_record = self.universe.population
@@ -247,10 +241,12 @@ run = True
 
 while run:
 
+	'''
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:	
 			run = False
-
+	'''
+	
 	game.loop()
 	if game.extinction == True:
 		break
