@@ -2,6 +2,7 @@ import random
 import pygame
 from creature import Creature
 from food import Food
+import uuid
 
 class Universe(object):
 	
@@ -14,8 +15,6 @@ class Universe(object):
 		self.creatures_size = creatures_size
 		self.population = 0
 		self.food_count = 0
-		self.food_current_id = 1
-		self.creature_current_id = 1
 		self.cicles = 0
 		self.screen = screen
 
@@ -53,30 +52,30 @@ class Universe(object):
 		self.cicles += 1
 
 	def create_creature(self, x_position, y_position, screen, velocity, gender=None):
+
+		id = uuid.uuid4()
 		if gender:
 			new_creature = Creature(self.window, x_position, y_position, screen.width, 
-				screen.height, velocity, self.creatures_size, self.creature_current_id, gender)
+				screen.height, velocity, self.creatures_size, id, gender)
 		else:
 			creature_gender = None
 			new_creature = Creature(
 				self.window, x_position, y_position, screen.width, screen.height, 
-				velocity, self.creatures_size, self.creature_current_id, creature_gender)
+				velocity, self.creatures_size, id, creature_gender)
 
-		self.creatures_dict[self.creature_current_id] = new_creature
-		self.position_matrix[x_position][y_position] = self.creature_current_id
+		self.creatures_dict[id] = new_creature
+		self.position_matrix[x_position][y_position] = id
 		self.population += 1
-		self.creature_current_id += 1
 		
 		pygame.draw.rect(self.window, (0,0,255), (x_position, y_position, 10, 10))	
 
 	def create_food(self, x, y):
+		id = uuid.uuid4()
+		new_food = Food(self.window, x, y, id)
+		self.food_dict[id] = new_food
+		self.food_position_matrix[x][y] = id
 
-		new_food = Food(self.window, x, y, self.food_current_id)
-		self.food_dict[self.food_current_id] = new_food
-		self.food_position_matrix[x][y] = self.food_current_id
-		self.food_current_id += 1
-
-		pygame.draw.rect(self.window, (0,255,0), (x, y, 10, 10))
+		pygame.draw.rect(self.window, (0,255,0), (x, y, 8, 8))
 
 
 			

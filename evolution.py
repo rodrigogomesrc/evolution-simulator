@@ -16,7 +16,7 @@ class Game(object):
 		self.population_record = 0
 		self.hungry_deaths = 0
 		self.age_deaths = 0
-		self.food_wait = 10
+		self.food_wait = 1
 		self.extinction = False
 
 		pygame.display.set_caption("Evolution")
@@ -36,21 +36,27 @@ class Game(object):
 			x, y = self.get_random_position()
 			self.universe.create_food(x, y)
 
+		print("Quantidade de comida: ", len(self.universe.food_dict.items()))
+			
 		self.cicle_time = timer()
 		for i in range(200):
-
 			velocity = random.randint(30, 100)
 			x, y = x, y = self.get_random_position()
 			self.universe.create_creature(x, y, self.screen, velocity)
 
 	def spawn_food(self):
-
 		x, y = self.get_random_position()
 
 		if self.food_wait <= 0:
 			self.universe.create_food(x, y)
 			self.food_wait = 10
 
+	def render_food(self):
+		
+		food_list = self.universe.food_dict.copy().items()
+		print("Quantidade de comida: ", len(self.universe.food_dict.items()))
+		for id, food in food_list:
+			food.render()
 
 	def remove_food(self, food):
 		self.universe.remove_food(food)
@@ -205,13 +211,14 @@ class Game(object):
 			self.window.fill((255,255,255))
 			self.checks(True)
 			self.evaluate_cicle_time()
+			self.render_food()
 			pygame.display.update()
 			self.print_stats()
-
+			
 		else:
 			self.checks(False)
 
-		self.spawn_food()
+		#self.spawn_food()
 		self.counters()
 
 		if self.universe.population > self.population_record:
@@ -241,22 +248,20 @@ run = True
 
 while run:
 
-	'''
+
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:	
 			run = False
-	'''
 	
 	game.loop()
 	if game.extinction == True:
 		break
 
 
-'''
+
 print("Population all times: ", game.universe.creature_current_id)
 print("Population record: ", game.population_record)
 print("Cicles simulated: ", game.universe.cicles)
 print("Hungry deaths: ", game.hungry_deaths)
 print("age_deaths: ", game.age_deaths)
 print("Days simulated: %d" %(game.universe.cicles / 72))
-'''
