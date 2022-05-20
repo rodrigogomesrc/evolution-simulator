@@ -8,8 +8,6 @@ class Creature(object):
 		self.window = window
 		self.x_position = x_position
 		self.y_position = y_position
-		self.y_position = y_position
-		self.x_position = x_position
 		self.screen_x = screen_x
 		self.screen_y = screen_y
 		self.original_velocity = velocity
@@ -35,6 +33,12 @@ class Creature(object):
 		self.reproduction_age_end = 6500
 
 		self.mutate()
+
+	def get_x(self):
+		return self.x_position
+
+	def get_y(self):
+		return self.y_position
 
 	def mutate(self):
 
@@ -99,7 +103,9 @@ class Creature(object):
 		self.wait_to_velocity -= 1
 
 		if(render):
-			pygame.draw.rect(self.window, (2 * self.original_velocity, 0, 255), (self.x_position, self.y_position, 10, 10))	
+			pygame.draw.rect(self.window, (2 * self.original_velocity, 0, 255), (self.x_position, self.y_position, 10, 10))
+		
+		return self.x_position, self.y_position
 
 
 	def move_up(self):

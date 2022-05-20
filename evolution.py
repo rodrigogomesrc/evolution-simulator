@@ -88,22 +88,21 @@ class Game(object):
 				self.age_deaths += 1
 
 			#remove creature
-			self.remove_creature(food)
+			self.remove_creature(creature)
 			#self.universe.creatures.remove(creature)
 		
 
 	def check_if_ate(self, creature):
 
-		for food in self.universe.food:
+		food_dict = self.universe.food_dict.copy()
+		for id, food in food_dict.items():
 
 			dx = abs(food.x_position - creature.x_position)
 			dy = abs(food.y_position - creature.y_position)
 
 			if dx <= 20 and dy <= 20:			
 
-				#remove food
 				self.remove_food(food)
-				#self.universe.food.remove(food)
 				creature.eat()
 				break
 
@@ -159,19 +158,24 @@ class Game(object):
 
 	def checks(self, render=False):
 
-		'''
-		for id, creature in self.universe.creatures:
-			
-		'''
+		creatures = self.universe.creatures_dict.copy()
 
-		for creature in self.universe.creatures:
+		for id, creature in creatures.items():
 			
 			self.check_creatures_lifes(creature)
-			creature.move(render)
-			self.check_if_ate(creature)
-			self.check_reproduction(creature)
+			self.move_creature(creature, id, render)
+			#self.check_if_ate(creature)
+			#self.check_reproduction(creature)
 	
-		self.check_food()
+		#self.check_food()
+
+	def move_creature(self, creature, id, render):
+		x = creature.get_x()
+		y = creature.get_y()
+		self.universe.remove_from_creatures_coordenates(x,y)
+		x, y = creature.move(render)
+		self.universe.add_to_creatures_coordenates(x,y,id)
+			
 
 	def loop(self):
 

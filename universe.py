@@ -26,6 +26,12 @@ class Universe(object):
 
 		self.init_matrix()
 
+	def remove_from_creatures_coordenates(self, x, y):
+		self.position_matrix[x][y] = 0
+
+	def add_to_creatures_coordenates(self, x, y, creature_id):
+		self.position_matrix[x][y] = creature_id
+
 	def remove_food(self, food):
 		food_id = food.get_id()
 		del self.food_dict[food_id]
@@ -72,7 +78,7 @@ class Universe(object):
 
 		#before dict implementation
 		new_food = Food(self.window, x, y, self.food_current_id)
-		self.food.append(new_food)
+		#self.food.append(new_food)
 
 		#after dict implementation
 		self.food_dict[self.food_current_id] = new_food
