@@ -19,11 +19,22 @@ class Universe(object):
 		self.screen = screen
 
 		self.creatures_dict = {}
-		self.food_dict = {}
 		self.position_matrix = []
+		self.creatures_available_positions = set()
+
+		self.food_dict = {}
 		self.food_position_matrix = []
+		self.food_available_positions = set()
 
 		self.init_matrix()
+		self.init_available_positions()
+
+	#initialize available positions based on tuples of the screen size 
+	def init_available_positions(self):
+		for x in range(self.screen.width):
+			for y in range(self.screen.height):
+				self.creatures_available_positions.add((x,y))
+				self.food_available_positions.add((x,y))
 
 	def remove_from_creatures_coordenates(self, x, y):
 		self.position_matrix[x][y] = 0
@@ -34,8 +45,17 @@ class Universe(object):
 	def remove_food(self, food):
 		food_id = food.get_id()
 		del self.food_dict[food_id]
-		self.food_position_matrix[food.get_x_position()][food.get_y_position()] = 0
+
+		food_y = food.get_y()
+		food_x = food.get_x()
+
+		self.food_position_matrix[food_x][food_y] = 0
 		self.food_count -= 1
+
+		#add to available positions
+		self.food_available_positions.add((food_x, food_y))
+
+
 
 	def remove_creature(self, creature):
 		creature_id = creature.get_id()
@@ -69,7 +89,20 @@ class Universe(object):
 		
 		pygame.draw.rect(self.window, (0,0,255), (x_position, y_position, 10, 10))	
 
-	def create_food(self, x, y):
+	def create_food(self):
+
+		#check if there is any available position
+		if not len(self.food_available_positions) > 0:
+			return
+
+		# get random available food position
+		food_position = random.sample(self.food_available_positions, 1)[0]
+		x = food_position[0]
+		y = food_position[1]
+
+		# remove position from available positions
+		self.food_available_positions.remove((x,y))
+
 		id = uuid.uuid4()
 		new_food = Food(self.window, x, y, id)
 		self.food_dict[id] = new_food

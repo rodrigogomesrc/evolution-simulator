@@ -33,23 +33,25 @@ class Game(object):
 	def start_world(self):
 
 		for i in range(100):
-			x, y = self.get_random_position()
-			self.universe.create_food(x, y)
+			self.universe.create_food()
 
 		print("Quantidade de comida: ", len(self.universe.food_dict.items()))
 			
 		self.cicle_time = timer()
+		
 		for i in range(200):
 			velocity = random.randint(30, 100)
 			x, y = x, y = self.get_random_position()
 			self.universe.create_creature(x, y, self.screen, velocity)
+		
 
 	def spawn_food(self):
 		x, y = self.get_random_position()
 
 		if self.food_wait <= 0:
-			self.universe.create_food(x, y)
+			self.universe.create_food()
 			self.food_wait = 10
+
 
 	def render_food(self):
 		
@@ -227,6 +229,8 @@ class Game(object):
 		if self.universe.population == 0:
 			self.extinction = True
 
+		
+
 	def evaluate_cicle_time(self):
 		self.total_cicle_time = 0
 		self.total_cicle_time = timer() - self.cicle_time
@@ -255,11 +259,12 @@ while run:
 	
 	game.loop()
 	if game.extinction == True:
-		break
+		pass
+		#break
 
 
 
-print("Population all times: ", game.universe.creature_current_id)
+#print("Population all times: ", game.universe.creature_current_id)
 print("Population record: ", game.population_record)
 print("Cicles simulated: ", game.universe.cicles)
 print("Hungry deaths: ", game.hungry_deaths)
