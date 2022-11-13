@@ -26,7 +26,6 @@ class Creature(object):
 		self.cicles = 0
 		self.energy_expended = (velocity // 30)
 		self.gender = gender
-		self.can_reproduce = False
 		self.time_without_reproduction = 0
 		self.reproduction_wait = 1000
 		self.reproduction_age_start = 2000
@@ -39,6 +38,9 @@ class Creature(object):
 
 	def get_y(self):
 		return self.y_position
+
+	def get_velocity(self):
+		return self.velocity
 
 	def mutate(self):
 
@@ -56,7 +58,6 @@ class Creature(object):
 		
 		self.age_creature()
 		self.use_energy(self.energy_expended)
-		self.check_reproduction()
 		self.cicles += 1
 
 		if self.wait_to_velocity <= 0:
@@ -103,9 +104,20 @@ class Creature(object):
 		self.wait_to_velocity -= 1
 
 		if(render):
-			pygame.draw.rect(self.window, (2 * self.original_velocity, 0, 255), (self.x_position, self.y_position, 10, 10))
+			pygame.draw.rect(self.window, (self.get_color(), 0, 255), (self.x_position, self.y_position, 10, 10))
 		
 		return self.x_position, self.y_position
+
+
+	def get_color(self):
+		color = int(2 * self.original_velocity)
+		if color > 255:
+			color = 255
+
+		if color < 0:
+			color = 0
+			
+		return color
 
 
 	def move_up(self):
@@ -199,24 +211,21 @@ class Creature(object):
 		if self.energy < self.energy_max:
 			self.energy += 50
 
-	def check_reproduction(self):
-
+	def check_if_able_to_reproduce(self):
 		self.time_without_reproduction += 1
-
 		if self.time_without_reproduction < self.reproduction_wait:
-			self.can_reproduce = False
-
+			return False
 		elif self.energy < (self.energy_max / 2):
-			self.can_reproduce = False
+			return False
 
 		elif self.age < self.reproduction_age_start:
-			self.can_reproduce = False
+			return False
 
 		elif self.age > self.reproduction_age_end:
-			self.can_reproduce = False
+			return False
 
 		elif self.time_without_reproduction < self.reproduction_wait:
-			self.can_reproduce = False
+			return False
 
-		else:
-			self.can_reproduce = True
+		self.time_without_reproduction = 0
+		return True

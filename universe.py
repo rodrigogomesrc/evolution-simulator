@@ -102,7 +102,7 @@ class Universe(object):
 	def count_cicles(self):
 		self.cicles += 1
 
-	def create_creature(self, screen, velocity, gender=None):
+	def create_creature(self, screen, velocity, sex=None):
 
 		if not len(self.food_available_positions) > 0:
 			return
@@ -114,14 +114,14 @@ class Universe(object):
 
 		id = self.get_id()
 
-		if gender:
+		if sex:
 			new_creature = Creature(self.window, x, y , screen.width, 
-				screen.height, velocity, self.creatures_size, id, gender)
+				screen.height, velocity, self.creatures_size, id, sex)
 		else:
-			creature_gender = None
+			creature_sex = None
 			new_creature = Creature(
 				self.window,x, y,  screen.width, screen.height, 
-				velocity, self.creatures_size, id, creature_gender)
+				velocity, self.creatures_size, id, creature_sex)
 
 		self.creatures_dict[id] = new_creature
 		self.position_matrix[x][y] = id
@@ -157,5 +157,16 @@ class Universe(object):
 
 		pygame.draw.rect(self.window, (0,255,0), (x, y, 8, 8))
 
+	def get_creature_matrix_id(self, x, y):
+		return self.position_matrix[x][y]
+
+	def get_food_matrix_id(self, x, y):
+		return self.food_position_matrix[x][y]
+
+	def get_creature_by_id(self, id):
+		return self.creatures_dict[id]
+
+	def get_food_by_id(self, id):
+		return self.food_dict[id]
 
 			

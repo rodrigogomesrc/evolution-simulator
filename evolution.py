@@ -37,8 +37,8 @@ class Game(object):
 			self.screen = Screen(width, height)
 
 			self.food_wait = data['ciclesToSpawnFood']
-
 			Food.duration = data['foodDuration']
+			self.consider_sex = data['considerTwoSexes']
 
 
 	def get_random_position(self):
@@ -55,7 +55,12 @@ class Game(object):
 		print("creating creatures...")		
 		for i in range(self.initial_creatures):
 			velocity = random.randint(30, 100)
-			self.universe.create_creature(self.screen, velocity)
+			if(self.consider_sex):
+				creature_sex = random.randint(0, 1)
+				self.universe.create_creature(self.screen, velocity, sex=creature_sex)
+
+			else:
+				self.universe.create_creature(self.screen, velocity)
 
 		print("food and creatures created, starting simulation..")
 		self.cicle_time = timer()
@@ -129,80 +134,71 @@ class Game(object):
 			self.remove_creature(creature)
 		
 	def handle_creature_close_to_food(self, creature, x, y):
-
-		if(self.check_if_coordenates_inside_screen(x,y)):
-
-			removed = self.universe.remove_food_by_position(x, y)
-			if removed:
-				creature.eat()
-				return True
+		removed = self.universe.remove_food_by_position(x, y)
+		if removed:
+			creature.eat()
+			return True
 			
-			return False
 		return False
 
-	def check_if_ate(self, creature):
+	def check_creature_proximity(self, creature):
 		x = creature.get_x()
 		y = creature.get_y()
 
-		ate = self.handle_creature_close_to_food(creature, x, y)
-		if(ate):
-			return
-		ate = self.handle_creature_close_to_food(creature, x, y + 1)
-		if(ate):
-			return
-		ate = self.handle_creature_close_to_food(creature, x, y + -1)
-		if(ate):
-			return
-		ate = self.handle_creature_close_to_food(creature, x + 1, y)
-		if(ate):
-			return
-		ate = self.handle_creature_close_to_food(creature, x - 1, y)
-		if(ate):
-			return
-		ate = self.handle_creature_close_to_food(creature, x - 1, y - 1)
-		if(ate):
-			return
-		ate = self.handle_creature_close_to_food(creature, x + 1, y + 1)
-		if(ate):
-			return
-		ate = self.handle_creature_close_to_food(creature, x + 1, y - 1)
-		
-		if(ate):
-			return
-		ate = self.handle_creature_close_to_food(creature, x - 1, y + 1)
+		if(self.check_if_coordenates_inside_screen(x,y)):
+			self.handle_creature_close_to_food(creature, x, y)
+			self.check_reproduction(creature, x, y)
+
+		if(self.check_if_coordenates_inside_screen(x, y + 1)):
+			self.handle_creature_close_to_food(creature, x, y + 1)
+			self.check_reproduction(creature, x, y + 1)
+
+		if(self.check_if_coordenates_inside_screen(x, y + -1)):
+			self.handle_creature_close_to_food(creature, x, y + -1)
+			self.check_reproduction(creature, x, y - 1)
+
+		if(self.check_if_coordenates_inside_screen( x + 1, y)):
+			self.handle_creature_close_to_food(creature, x + 1, y)
+			self.check_reproduction(creature, x + 1, y)
+
+		if(self.check_if_coordenates_inside_screen(x - 1, y)):
+			self.handle_creature_close_to_food(creature, x - 1, y)
+			self.check_reproduction(creature, x - 1, y)
+
+		if(self.check_if_coordenates_inside_screen(x - 1, y - 1)):
+			self.handle_creature_close_to_food(creature, x - 1, y - 1)
+			self.check_reproduction(creature, x - 1, y - 1)
+
+		if(self.check_if_coordenates_inside_screen( x - 1, y + 1)):
+			self.handle_creature_close_to_food(creature, x - 1, y + 1)
+			self.check_reproduction(creature, x - 1, y + 1)
+
+		if(self.check_if_coordenates_inside_screen(x + 1, y - 1)):
+			self.handle_creature_close_to_food(creature, x + 1, y - 1)
+			self.check_reproduction(creature, x + 1, y - 1)
+
+		if(self.check_if_coordenates_inside_screen(x - 1, y + 1)):
+			self.handle_creature_close_to_food(creature, x - 1, y + 1)
+			self.check_reproduction(creature, x - 1, y + 1)
 	
 
-	def check_reproduction(self, creature):
+	def check_reproduction(self, creature, x, y):
 
-		reproducted = []
-			
-		for c in self.universe.creatures:
+		matrix_id = self.universe.get_creature_matrix_id(x, y)
+		if(matrix_id == 0):
+			return
+		
+		if not creature.check_if_able_to_reproduce():
+			return
+		
+		#TODO: logic considering sex
+		if self.consider_sex:
+			return
 
-			dx = abs(creature.x_position - c.x_position)
-			dy = abs(creature.y_position - c.y_position)
-			can_reproduce = c.can_reproduce and creature.can_reproduce and creature.idnumber not in reproducted and c.idnumber not in reproducted
-			can_reproduce2 = creature.gender != c.gender
+		creature_to_reproduce = self.universe.get_creature_by_id(matrix_id)
+		new_velocity = creature.get_velocity() + creature_to_reproduce.get_velocity() / 2
+		self.universe.create_creature(self.screen, new_velocity)
 
-			if dx <= 20 and dy <= 20 and dx != 0 and dy != 0 and can_reproduce:
-
-				x, y = self.get_random_position()
-				gender = None
-				gender_number = random.randint(0,2)
-
-				if gender_number == 1:
-					gender = "M"
-
-				else:
-					gender = "F"
-
-				c.time_without_reproduction = 0
-				creature.time_without_reproduction = 0
-				reproducted.append(creature.idnumber)
-				reproducted.append(c.idnumber)
-
-				velocity = (creature.original_velocity + c.original_velocity) / 2
-
-				self.universe.create_creature(self.screen, velocity, gender=gender)
 
 
 	def check_food_is_expired(self, food):
@@ -220,11 +216,9 @@ class Game(object):
 
 		creatures = self.universe.creatures_dict.copy().items()
 		for id, creature in creatures:
-			
 			self.check_creatures_lifes(creature)
 			self.move_creature(creature, id, render)
-			self.check_if_ate(creature)
-			#self.check_reproduction(creature)
+			self.check_creature_proximity(creature)
 
 
 	def move_creature(self, creature, id, render):
