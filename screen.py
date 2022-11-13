@@ -1,6 +1,5 @@
 class Screen(object):
 	
-	def __init__(self):
-		
-		self.height = 600
-		self.width = 1000
+	def __init__(self, width, height):
+		self.height = height
+		self.width = width

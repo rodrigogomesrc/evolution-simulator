@@ -2,7 +2,6 @@ import random
 import pygame
 from creature import Creature
 from food import Food
-import uuid
 
 class Universe(object):
 	
@@ -12,20 +11,29 @@ class Universe(object):
 		self.velocity = velocity
 		self.creatures_size = creatures_size
 		self.population = 0
+		self.all_time_population = 0
 		self.food_count = 0
 		self.cicles = 0
 		self.screen = screen
 
+		#creature data
 		self.creatures_dict = {}
 		self.position_matrix = []
 		self.creatures_available_positions = set()
 
+		#food data
 		self.food_dict = {}
 		self.food_position_matrix = []
 		self.food_available_positions = set()
 
 		self.init_matrix()
 		self.init_available_positions()
+
+		self.current_id = 0
+
+	def get_id(self):
+		self.current_id += 1
+		return str(self.current_id)
 
 
 	#initialize available positions based on tuples of the screen size 
@@ -67,8 +75,6 @@ class Universe(object):
 	def remove_food(self, food):
 		food_id = food.get_id()
 
-		#print("food removed, count: ", self.food_count)
-
 		del self.food_dict[food_id]
 		
 		food_y = food.get_y_position()
@@ -77,14 +83,7 @@ class Universe(object):
 		self.food_position_matrix[food_x][food_y] = 0
 
 		self.food_count -= 1
-
-		#add to available positions
 		self.food_available_positions.add((food_x, food_y))
-
-		#self.eaten_food.add(food_id)
-		
-		#not eaten is the food in the food dict and not in the eaten food set
-		#self.not_eaten_food = set(self.food_dict.keys()) - self.eaten_food
 
 
 	def remove_creature(self, creature):
@@ -92,8 +91,6 @@ class Universe(object):
 		del self.creatures_dict[creature_id]
 		self.position_matrix[creature.get_x()][creature.get_y()]
 		self.population -= 1
-
-		#add to available positions
 		self.creatures_available_positions.add((creature.get_x(), creature.get_y()))
 		
 
@@ -115,7 +112,7 @@ class Universe(object):
 		while (x, y) not in self.creatures_available_positions:
 			x, y = self.get_random_position()
 
-		id = str(uuid.uuid4())
+		id = self.get_id()
 
 		if gender:
 			new_creature = Creature(self.window, x, y , screen.width, 
@@ -129,8 +126,8 @@ class Universe(object):
 		self.creatures_dict[id] = new_creature
 		self.position_matrix[x][y] = id
 		self.population += 1
+		self.all_time_population += 1
 
-		# remove position from available positions
 		self.creatures_available_positions.remove((x, y))
 		
 		pygame.draw.rect(self.window, (0,0,255), (x, y, 10, 10))	
@@ -148,10 +145,9 @@ class Universe(object):
 		while (x, y) not in self.food_available_positions:
 			x, y = self.get_random_position()
 
-		# remove position from available positions
 		self.food_available_positions.remove((x,y))
 
-		id = str(uuid.uuid4())
+		id = self.get_id()
 
 		new_food = Food(self.window, x, y, id)
 

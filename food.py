@@ -8,7 +8,7 @@ class Food(object):
 		self.x_position = x_position
 		self.y_position = y_position
 		self.idnumber = idnumber
-		self.duration = 30
+		self.duration = Food.duration
 		self.expired = False
 
 	def render(self):

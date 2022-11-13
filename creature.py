@@ -12,7 +12,7 @@ class Creature(object):
 		self.screen_y = screen_y
 		self.original_velocity = velocity
 		self.velocity = 100 - velocity
-		self.life = 7200
+		self.life = 10000
 		self.age = 0
 		self.size = size
 		self.moving = False
@@ -30,7 +30,7 @@ class Creature(object):
 		self.time_without_reproduction = 0
 		self.reproduction_wait = 1000
 		self.reproduction_age_start = 2000
-		self.reproduction_age_end = 6500
+		self.reproduction_age_end = 7000
 
 		self.mutate()
 

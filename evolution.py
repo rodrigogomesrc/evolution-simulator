@@ -5,28 +5,40 @@ from universe import Universe
 from creature import Creature
 from food import Food
 from timeit import default_timer as timer
+import json
 
 class Game(object):
 
 	def __init__(self):
 
-		self.screen = Screen()
+		self.load_configs()
 		self.window = pygame.display.set_mode((self.screen.width, self.screen.height))
 		self.universe = Universe(self.window, 10, 10, self.screen)
 		self.population_record = 0
 		self.hungry_deaths = 0
 		self.age_deaths = 0
-		self.food_wait = 1
 		self.extinction = False
-		self.cicle_size = 72
-		self.initial_food = 100
-		self.initial_creatures = 200
-
 		pygame.display.set_caption('Evolution')
 		pygame.init()
 
 		self.cicle_time = 0
 		self.total_cicle_time = 0
+
+	def load_configs(self):
+		
+		with open('config.json') as configs:
+			data = json.load(configs)
+			self.cicle_size = data['cicleSize']
+			self.initial_food = data['initialFood']
+			self.initial_creatures = data['initialCreatures']
+
+			width = data['screenWidth']
+			height = data['screenHeight']
+			self.screen = Screen(width, height)
+
+			self.food_wait = data['ciclesToSpawnFood']
+
+			Food.duration = data['foodDuration']
 
 
 	def get_random_position(self):
@@ -242,7 +254,7 @@ class Game(object):
 		print("Population: ", self.universe.population)
 		print("Food: ", self.universe.food_count)
 		print("Day: %d" %(game.universe.cicles / 72))
-		print("Time: %.5f" %(self.total_cicle_time))
+		print("Time taken to simulate day (s): %.5f" %(self.total_cicle_time))
 		
 	    
 pygame.quit()
@@ -253,8 +265,6 @@ game.start_world()
 run = True
 
 while run:
-
-
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:	
 			run = False
@@ -262,11 +272,10 @@ while run:
 	game.loop()
 	if game.extinction == True:
 		pass
-		#break
+		break
 
 
-
-#print("Population all times: ", game.universe.creature_current_id)
+print("Population all times: ", game.universe.all_time_population)
 print("Population record: ", game.population_record)
 print("Cicles simulated: ", game.universe.cicles)
 print("Hungry deaths: ", game.hungry_deaths)
