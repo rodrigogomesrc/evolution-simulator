@@ -1,0 +1,10 @@
+{
+    "cicleSize": 100,
+    "initialCreatures": 50,
+    "initialFood": 10,
+    "ciclesToSpawnFood": 1,
+    "screenWidth": 1000,
+    "screenHeight": 600,
+    "foodDuration": 10,
+    "considerTwoSexes": false
+}
