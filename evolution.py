@@ -6,6 +6,7 @@ from creature import Creature
 from food import Food
 from timeit import default_timer as timer
 import json
+import numpy as np
 
 class Game(object):
 
@@ -23,6 +24,9 @@ class Game(object):
 
 		self.cicle_time = 0
 		self.total_cicle_time = 0
+
+		#numpy arrays to store integer values
+		self.death_age = np.array([])
 
 	def load_configs(self):
 		
@@ -127,9 +131,10 @@ class Game(object):
 		if not alive:
 			if creature.energy <= 0:
 				self.hungry_deaths += 1
-
 			else:
 				self.age_deaths += 1
+
+			self.death_age = np.append(self.death_age, int(creature.age / self.cicle_size)  )
 			self.remove_creature(creature)
 		
 	def handle_creature_close_to_food(self, creature, x, y):
@@ -245,9 +250,11 @@ class Game(object):
 	def print_stats(self):
 		objects = self.universe.food_count + self.universe.population
 		velocity = (self.total_cicle_time / objects) * 1000
+		average_death_age = np.average(self.death_age)
 		print("Population: ", self.universe.population)
 		print("Food: ", self.universe.food_count)
-		print("Day: %d" %(game.universe.cicles / 72))
+		print("Day: %d" %(game.universe.cicles / self.cicle_size))
+		print("Average death age: %2f" %(average_death_age))
 		print("Time taken to simulate day (s): %.5f" %(self.total_cicle_time))
 		print("Velocity to simulate (s/obj): %.5f" %(velocity))
 		
@@ -275,4 +282,4 @@ print("Population record: ", game.population_record)
 print("Cicles simulated: ", game.universe.cicles)
 print("Hungry deaths: ", game.hungry_deaths)
 print("age_deaths: ", game.age_deaths)
-print("Days simulated: %d" %(game.universe.cicles / 72))
+print("Days simulated: %d" %(game.universe.cicles / self.cicle_size))
