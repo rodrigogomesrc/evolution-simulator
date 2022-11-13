@@ -50,6 +50,18 @@ class Universe(object):
 	def get_food_id_by_position(self, x, y):
 		return self.food_position_matrix[x][y]
 
+	def remove_untracked_food(self, x, y, food_id):
+		if food_id != 0 and food_id not in self.food_dict.keys():
+			self.food_position_matrix[x][y] = 0
+
+	def remove_food_by_position(self, x, y):
+		food_id = self.food_position_matrix[x][y]
+		#self.remove_untracked_food(x, y, food_id)
+		#food_id = self.food_position_matrix[x][y]
+		if(id == 0):
+			return False
+		return self.remove_food_by_id(food_id)
+
 
 	def remove_food_by_id(self, food_id):
 		if food_id in self.food_dict.keys():
@@ -62,14 +74,9 @@ class Universe(object):
 	def remove_food(self, food):
 		food_id = food.get_id()
 
-		print("food removed, count: ", self.food_count)
-	
-		#delete food from food dict
+		#print("food removed, count: ", self.food_count)
 
 		del self.food_dict[food_id]
-
-		if food_id in self.food_dict.keys():
-			print("food not removed from dict")
 		
 		food_y = food.get_y_position()
 		food_x = food.get_x_position()
@@ -88,6 +95,10 @@ class Universe(object):
 		self.position_matrix[creature.get_x()][creature.get_y()]
 		self.population -= 1
 
+		#add to available positions
+		self.creatures_available_positions.add((creature.get_x(), creature.get_y()))
+		
+
 	def init_matrix(self):
 		line = [0 for i in range(self.screen.height)]
 		self.position_matrix = [line for i in range(self.screen.width)]
@@ -96,24 +107,35 @@ class Universe(object):
 	def count_cicles(self):
 		self.cicles += 1
 
-	def create_creature(self, x_position, y_position, screen, velocity, gender=None):
+	def create_creature(self, screen, velocity, gender=None):
+
+		if not len(self.food_available_positions) > 0:
+			return
+
+		x, y = self.get_random_position()
+
+		while (x, y) not in self.creatures_available_positions:
+			x, y = self.get_random_position()
 
 		id = str(uuid.uuid4())
 
 		if gender:
-			new_creature = Creature(self.window, x_position, y_position, screen.width, 
+			new_creature = Creature(self.window, x, y , screen.width, 
 				screen.height, velocity, self.creatures_size, id, gender)
 		else:
 			creature_gender = None
 			new_creature = Creature(
-				self.window, x_position, y_position, screen.width, screen.height, 
+				self.window,x, y,  screen.width, screen.height, 
 				velocity, self.creatures_size, id, creature_gender)
 
 		self.creatures_dict[id] = new_creature
-		self.position_matrix[x_position][y_position] = id
+		self.position_matrix[x][y] = id
 		self.population += 1
+
+		# remove position from available positions
+		self.creatures_available_positions.remove((x, y))
 		
-		pygame.draw.rect(self.window, (0,0,255), (x_position, y_position, 10, 10))	
+		pygame.draw.rect(self.window, (0,0,255), (x, y, 10, 10))	
 
 	def create_food(self):
 

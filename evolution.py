@@ -49,7 +49,7 @@ class Game(object):
 		for i in range(200):
 			velocity = random.randint(30, 100)
 			x, y = x, y = self.get_random_position()
-			self.universe.create_creature(x, y, self.screen, velocity)
+			self.universe.create_creature(self.screen, velocity)
 
 		print("food and creatures created, starting simulation..")
 
@@ -62,7 +62,7 @@ class Game(object):
 
 	def render_food(self):
 		
-		food_list = self.universe.food_dict.items()
+		food_list = self.universe.food_dict.copy().items()
 		print("Quantidade de comida: ", self.universe.food_count)
 
 		for id, food in food_list:
@@ -97,8 +97,8 @@ class Game(object):
 	def handle_creature_close_to_food(self, creature, x, y):
 
 		if(self.check_if_coordenates_inside_screen(x,y)):
-			food_id = self.universe.get_food_id_by_position(x, y)
-			removed = self.universe.remove_food_by_id(food_id)
+
+			removed = self.universe.remove_food_by_position(x, y)
 			if removed:
 				creature.eat()
 				return True
@@ -168,7 +168,7 @@ class Game(object):
 
 				velocity = (creature.original_velocity + c.original_velocity) / 2
 
-				self.universe.create_creature(x, y, self.screen, velocity, gender=gender)
+				self.universe.create_creature(self.screen, velocity, gender=gender)
 
 
 	def check_food(self):
@@ -187,7 +187,7 @@ class Game(object):
 
 	def checks(self, render=False):
 
-		creatures = self.universe.creatures_dict.items()
+		creatures = self.universe.creatures_dict.copy().items()
 		for id, creature in creatures:
 			
 			self.check_creatures_lifes(creature)
@@ -217,9 +217,6 @@ class Game(object):
 			
 		else:
 			self.checks(False)
-
-	    #remove later
-		self.food_history.append(self.universe.food_count)
 
 		#self.spawn_food()
 		self.counters()
