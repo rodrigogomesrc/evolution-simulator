@@ -18,14 +18,16 @@ class Game(object):
 		self.age_deaths = 0
 		self.food_wait = 1
 		self.extinction = False
-
-		self.food_history = []
+		self.cicle_size = 72
+		self.initial_food = 100
+		self.initial_creatures = 200
 
 		pygame.display.set_caption('Evolution')
 		pygame.init()
 
 		self.cicle_time = 0
 		self.total_cicle_time = 0
+
 
 	def get_random_position(self):
 		x = random.randint(0, self.screen.width -1)
@@ -35,24 +37,16 @@ class Game(object):
 	def start_world(self):
 
 		print("creating food...")
-
-		for i in range(100):
+		for i in range(self.initial_food):
 			self.universe.create_food()
 
-		print("Quantidade de comida: ", self.universe.food_count)
-
-		self.food_history.append(self.universe.food_count)
-			
-		self.cicle_time = timer()
-
-		print("creating creatures...")
-		
-		for i in range(200):
+		print("creating creatures...")		
+		for i in range(self.initial_creatures):
 			velocity = random.randint(30, 100)
-			x, y = x, y = self.get_random_position()
 			self.universe.create_creature(self.screen, velocity)
 
 		print("food and creatures created, starting simulation..")
+		self.cicle_time = timer()
 
 	def spawn_food(self):
 		if self.food_wait <= 0:
@@ -60,14 +54,41 @@ class Game(object):
 			self.food_wait = 10
 		self.food_wait -= 1
 
+	
+	def ciclical_checks(self):
+		self.spawn_food()
+		self.counters()
 
-	def check_food(self):
-		
+		if self.universe.population > self.population_record:
+			self.population_record = self.universe.population
+
+		if self.universe.population == 0:
+			self.extinction = True
+
+
+	def daily_checks(self, rendering=True):
+		if rendering:
+			self.window.fill((255, 255, 255))
+			self.check_creatures(True)
+			self.check_food(True)
+			pygame.display.update()
+		else:
+			self.check_creatures(False)
+			self.check_food(False)
+
+		self.evaluate_cicle_time()
+		self.print_stats()
+
+	def check_food(self, render):
 		food_list = self.universe.food_dict.copy().items()
+		if render:
+			for id, food in food_list:
+				self.check_food_is_expired(food)
+				food.render()
+		else:
+			for id, food in food_list:
+				self.check_food_is_expired(food)
 
-		for id, food in food_list:
-			self.check_food_is_expired(food)
-			food.render()
 
 	def remove_creature(self, creature):
 		self.universe.remove_creature(creature)
@@ -203,27 +224,12 @@ class Game(object):
 			
 
 	def loop(self):
-
-		if((game.universe.cicles % 72) == 0):
-			self.window.fill((255,255,255))
-			self.check_creatures(True)
-			self.evaluate_cicle_time()
-			self.check_food()
-			pygame.display.update()
-			self.print_stats()
-			
+		if((game.universe.cicles % self.cicle_size) == 0):
+			self.daily_checks(True)			
 		else:
 			self.check_creatures(False)
 
-		self.spawn_food()
-		self.counters()
-
-		if self.universe.population > self.population_record:
-			self.population_record = self.universe.population
-
-		if self.universe.population == 0:
-			self.extinction = True
-
+		self.ciclical_checks()
 		
 
 	def evaluate_cicle_time(self):
