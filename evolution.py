@@ -19,7 +19,9 @@ class Game(object):
 		self.food_wait = 1
 		self.extinction = False
 
-		pygame.display.set_caption("Evolution")
+		self.food_history = []
+
+		pygame.display.set_caption('Evolution')
 		pygame.init()
 
 		self.cicle_time = 0
@@ -32,36 +34,39 @@ class Game(object):
 
 	def start_world(self):
 
-		for i in range(100):
+		print("creating food...")
+
+		for i in range(500):
 			self.universe.create_food()
 
-		print("Quantidade de comida: ", len(self.universe.food_dict.items()))
+		print("Quantidade de comida: ", self.universe.food_count)
+		self.food_history.append(self.universe.food_count)
 			
 		self.cicle_time = timer()
+
+		print("creating creatures...")
 		
 		for i in range(200):
 			velocity = random.randint(30, 100)
 			x, y = x, y = self.get_random_position()
 			self.universe.create_creature(x, y, self.screen, velocity)
-		
+
+		print("food and creatures created, starting simulation..")
 
 	def spawn_food(self):
-		x, y = self.get_random_position()
-
 		if self.food_wait <= 0:
 			self.universe.create_food()
 			self.food_wait = 10
+		self.food_wait -= 1
 
 
 	def render_food(self):
 		
-		food_list = self.universe.food_dict.copy().items()
-		print("Quantidade de comida: ", len(self.universe.food_dict.items()))
+		food_list = self.universe.food_dict.items()
+		print("Quantidade de comida: ", self.universe.food_count)
+
 		for id, food in food_list:
 			food.render()
-
-	def remove_food(self, food):
-		self.universe.remove_food(food)
 
 	def remove_creature(self, creature):
 		self.universe.remove_creature(creature)
@@ -88,26 +93,18 @@ class Game(object):
 			else:
 				self.age_deaths += 1
 			self.remove_creature(creature)
-
-
-	def make_creature_eat(self, creature, food_position):
-		food = self.universe.food_dict[food_position]
-		self.remove_food(food)
-		creature.eat()
 		
 	def handle_creature_close_to_food(self, creature, x, y):
-		food_matrix = self.universe.food_position_matrix
 
 		if(self.check_if_coordenates_inside_screen(x,y)):
-			food_position = food_matrix[x][y]
-			if (food_position != 0 and food_position):
-				try:
-					self.make_creature_eat(creature, food_position)
-					return True
-				except:
-					pass
+			food_id = self.universe.get_food_id_by_position(x, y)
+			removed = self.universe.remove_food_by_id(food_id)
+			if removed:
+				creature.eat()
+				return True
+			
 			return False
-
+		return False
 
 	def check_if_ate(self, creature):
 		x = creature.get_x()
@@ -116,6 +113,7 @@ class Game(object):
 		ate = self.handle_creature_close_to_food(creature, x, y)
 		if(ate):
 			return
+
 		ate = self.handle_creature_close_to_food(creature, x, y + 1)
 		if(ate):
 			return
@@ -138,7 +136,7 @@ class Game(object):
 		if(ate):
 			return
 		ate = self.handle_creature_close_to_food(creature, x - 1, y + 1)
-
+	
 
 	def check_reproduction(self, creature):
 
@@ -179,7 +177,7 @@ class Game(object):
 			expired = food.expired	
 
 			if expired:
-				self.remove_food(food)
+				self.universe.remove_food(food)
 			
 
 			else:
@@ -189,7 +187,7 @@ class Game(object):
 
 	def checks(self, render=False):
 
-		creatures = self.universe.creatures_dict.copy().items()
+		creatures = self.universe.creatures_dict.items()
 		for id, creature in creatures:
 			
 			self.check_creatures_lifes(creature)
@@ -219,6 +217,9 @@ class Game(object):
 			
 		else:
 			self.checks(False)
+
+	    #remove later
+		self.food_history.append(self.universe.food_count)
 
 		#self.spawn_food()
 		self.counters()
