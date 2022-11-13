@@ -123,9 +123,8 @@ class Game(object):
 			return True
 
 	def check_creatures_lifes(self, creature):
-		alive = creature.check_alive()
+		alive = creature.is_alive()
 		if not alive:
-
 			if creature.energy <= 0:
 				self.hungry_deaths += 1
 
@@ -195,22 +194,21 @@ class Game(object):
 		if self.consider_sex:
 			return
 
-		creature_to_reproduce = self.universe.get_creature_by_id(matrix_id)
+		try:
+			creature_to_reproduce = self.universe.get_creature_by_id(matrix_id)
+		except:
+			#it happens when there's a inconsistence between the matrix and the creature list
+			return
+
 		new_velocity = creature.get_velocity() + creature_to_reproduce.get_velocity() / 2
 		self.universe.create_creature(self.screen, new_velocity)
 
 
-
 	def check_food_is_expired(self, food):
 		expired = food.is_expired()
-
 		if expired:			
 			self.universe.remove_food(food)
-			
-		else:
-			if((game.universe.cicles % 72) == 0):
-				food.render()
-			
+
 
 	def check_creatures(self, render=False):
 
@@ -245,10 +243,13 @@ class Game(object):
 			
 
 	def print_stats(self):
+		objects = self.universe.food_count + self.universe.population
+		velocity = (self.total_cicle_time / objects) * 1000
 		print("Population: ", self.universe.population)
 		print("Food: ", self.universe.food_count)
 		print("Day: %d" %(game.universe.cicles / 72))
 		print("Time taken to simulate day (s): %.5f" %(self.total_cicle_time))
+		print("Velocity to simulate (s/obj): %.5f" %(velocity))
 		
 	    
 pygame.quit()

@@ -116,7 +116,7 @@ class Creature(object):
 
 		if color < 0:
 			color = 0
-			
+
 		return color
 
 
@@ -200,7 +200,7 @@ class Creature(object):
 		if self.energy <= 0:
 			self.alive = False
 
-	def check_alive(self):
+	def is_alive(self):
 		return self.alive
 
 	def get_id(self):
