@@ -10,8 +10,6 @@ class Universe(object):
 
 		self.window = window
 		self.velocity = velocity
-		self.creatures = []
-		self.food = []
 		self.creatures_size = creatures_size
 		self.population = 0
 		self.food_count = 0
@@ -28,6 +26,7 @@ class Universe(object):
 
 		self.init_matrix()
 		self.init_available_positions()
+
 
 	#initialize available positions based on tuples of the screen size 
 	def init_available_positions(self):
@@ -50,14 +49,8 @@ class Universe(object):
 	def get_food_id_by_position(self, x, y):
 		return self.food_position_matrix[x][y]
 
-	def remove_untracked_food(self, x, y, food_id):
-		if food_id != 0 and food_id not in self.food_dict.keys():
-			self.food_position_matrix[x][y] = 0
-
 	def remove_food_by_position(self, x, y):
 		food_id = self.food_position_matrix[x][y]
-		#self.remove_untracked_food(x, y, food_id)
-		#food_id = self.food_position_matrix[x][y]
 		if(id == 0):
 			return False
 		return self.remove_food_by_id(food_id)
@@ -87,6 +80,11 @@ class Universe(object):
 
 		#add to available positions
 		self.food_available_positions.add((food_x, food_y))
+
+		#self.eaten_food.add(food_id)
+		
+		#not eaten is the food in the food dict and not in the eaten food set
+		#self.not_eaten_food = set(self.food_dict.keys()) - self.eaten_food
 
 
 	def remove_creature(self, creature):

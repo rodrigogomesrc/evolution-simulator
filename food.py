@@ -8,16 +8,17 @@ class Food(object):
 		self.x_position = x_position
 		self.y_position = y_position
 		self.idnumber = idnumber
-		self.duration = 3000
+		self.duration = 30
 		self.expired = False
 
 	def render(self):
-
 		self.expire()
 		pygame.draw.rect(self.window, (0,255,0), (self.x_position, self.y_position, 10, 10))
 
-	def expire(self):
+	def is_expired(self):
+		return self.expired
 
+	def expire(self):
 		self.duration -= 1
 
 		if self.duration <= 0:
