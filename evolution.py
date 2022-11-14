@@ -79,6 +79,7 @@ class Game(object):
 	def ciclical_checks(self):
 		self.spawn_food()
 		self.counters()
+		self.check_creatures()
 
 		if self.universe.population > self.population_record:
 			self.population_record = self.universe.population
@@ -235,8 +236,6 @@ class Game(object):
 	def loop(self):
 		if((game.universe.cicles % self.cicle_size) == 0):
 			self.daily_checks(True)			
-		else:
-			self.check_creatures(False)
 
 		self.ciclical_checks()
 		
@@ -282,4 +281,4 @@ print("Population record: ", game.population_record)
 print("Cicles simulated: ", game.universe.cicles)
 print("Hungry deaths: ", game.hungry_deaths)
 print("age_deaths: ", game.age_deaths)
-print("Days simulated: %d" %(game.universe.cicles / self.cicle_size))
+print("Days simulated: %d" %(game.universe.cicles / game.cicle_size))
