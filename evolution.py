@@ -7,6 +7,7 @@ from food import Food
 from timeit import default_timer as timer
 import json
 import numpy as np
+import multiprocessing as mp
 
 class Game(object):
 
@@ -88,19 +89,24 @@ class Game(object):
 			self.extinction = True
 
 
-	def daily_checks(self, rendering=True):
-		if rendering:
-			self.window.fill((255, 255, 255))
-			self.check_creatures(True)
-			self.check_food(True)
-			pygame.display.update()
-		else:
-			self.check_creatures(False)
-			self.check_food(False)
+	def daily_checks(self):
+		self.window.fill((255, 255, 255))
+		self.life_checks()
+		self.check_creatures(True)
+		pygame.display.update()
 
 		self.evaluate_cicle_time()
 		self.print_stats()
 
+	def life_checks(self):
+		self.check_food(True)
+		self.check_creatures_lifes()
+
+	def check_creatures_lifes(self):
+		creatures = self.universe.creatures_dict.copy().items()
+		for id, creature in creatures:
+			self.check_creature_life(creature)
+			
 	def check_food(self, render):
 		food_list = self.universe.food_dict.copy().items()
 		if render:
@@ -127,7 +133,7 @@ class Game(object):
 		else:
 			return True
 
-	def check_creatures_lifes(self, creature):
+	def check_creature_life(self, creature):
 		alive = creature.is_alive()
 		if not alive:
 			if creature.energy <= 0:
@@ -220,7 +226,6 @@ class Game(object):
 
 		creatures = self.universe.creatures_dict.copy().items()
 		for id, creature in creatures:
-			self.check_creatures_lifes(creature)
 			self.move_creature(creature, id, render)
 			self.check_creature_proximity(creature)
 
@@ -235,7 +240,7 @@ class Game(object):
 
 	def loop(self):
 		if((game.universe.cicles % self.cicle_size) == 0):
-			self.daily_checks(True)			
+			self.daily_checks()			
 
 		self.ciclical_checks()
 		
