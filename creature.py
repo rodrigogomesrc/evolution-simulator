@@ -33,6 +33,9 @@ class Creature(object):
 
 		self.mutate()
 
+	def get_age(self):
+		return self.age
+
 	def get_x(self):
 		return self.x_position
 

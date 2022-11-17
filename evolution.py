@@ -9,6 +9,9 @@ import json
 import numpy as np
 import multiprocessing as mp
 
+import matplotlib.pyplot as plt
+import pandas as pd
+
 class Game(object):
 
 	def __init__(self):
@@ -28,6 +31,14 @@ class Game(object):
 
 		#numpy arrays to store integer values
 		self.death_age = np.array([])
+		self.velocity = np.array([])
+
+
+		self.average_velocity = pd.DataFrame(columns=['velocity', 'day'])
+		self.average_death_age = pd.DataFrame(columns=['age', 'day'])
+
+
+		self.population_limit = 100
 
 	def load_configs(self):
 		
@@ -142,6 +153,7 @@ class Game(object):
 				self.age_deaths += 1
 
 			self.death_age = np.append(self.death_age, int(creature.age / self.cicle_size)  )
+			self.velocity = np.append(self.velocity, creature.get_velocity() / self.cicle_size)
 			self.remove_creature(creature)
 		
 	def handle_creature_close_to_food(self, creature, x, y):
@@ -194,6 +206,9 @@ class Game(object):
 	
 
 	def check_reproduction(self, creature, x, y):
+
+		if self.universe.population > self.population_limit:
+			return
 
 		matrix_id = self.universe.get_creature_matrix_id(x, y)
 		if(matrix_id == 0):
@@ -255,10 +270,21 @@ class Game(object):
 		objects = self.universe.food_count + self.universe.population
 		velocity = (self.total_cicle_time / objects) * 1000
 		average_death_age = np.average(self.death_age)
+		averate_creature_velocity = np.average(self.velocity)
+
+		day = game.universe.cicles / self.cicle_size
+
+		self.average_death_age = self.average_death_age.append(
+			{'age': average_death_age, 'day': day}, ignore_index=True)
+
+		self.average_velocity = self.average_velocity.append(
+			{'velocity': averate_creature_velocity, 'day': day}, ignore_index=True)
+
 		print("Population: ", self.universe.population)
 		print("Food: ", self.universe.food_count)
-		print("Day: %d" %(game.universe.cicles / self.cicle_size))
+		print("Day: %d" %day)
 		print("Average death age: %2f" %(average_death_age))
+		print("Average velocity: %2f" %(averate_creature_velocity))
 		print("Time taken to simulate day (s): %.5f" %(self.total_cicle_time))
 		print("Velocity to simulate (s/obj): %.5f" %(velocity))
 		
@@ -287,3 +313,8 @@ print("Cicles simulated: ", game.universe.cicles)
 print("Hungry deaths: ", game.hungry_deaths)
 print("age_deaths: ", game.age_deaths)
 print("Days simulated: %d" %(game.universe.cicles / game.cicle_size))
+
+
+plt.plot(game.average_velocity['day'], game.average_velocity['velocity'])
+plt.plot(game.average_death_age['day'], game.average_death_age['age'])
+plt.show()
