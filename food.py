@@ -12,9 +12,6 @@ class Food(object):
         self.duration = Food.duration
         self.expired = False
 
-    def render(self):
-        self.expire()
-
     def is_expired(self):
         return self.expired
 

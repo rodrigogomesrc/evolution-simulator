@@ -2,20 +2,28 @@ import pygame
 import random
 from screen import Screen
 from universe import Universe
-from creature import Creature
 from food import Food
 from timeit import default_timer as timer
 import json
 import numpy as np
-import multiprocessing as mp
-
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
+
+import warnings
+
+warnings.filterwarnings('ignore')  # setting ignore as a parameter
+
 
 class Game(object):
 
     def __init__(self):
 
+        self.consider_sex = None
+        self.food_wait = None
+        self.screen = None
+        self.initial_creatures = None
+        self.initial_food = None
+        self.cicle_size = None
         self.load_configs()
         self.window = pygame.display.set_mode((self.screen.width, self.screen.height))
         self.universe = Universe(self.window, 10, 10, self.screen)
@@ -23,20 +31,21 @@ class Game(object):
         self.hungry_deaths = 0
         self.age_deaths = 0
         self.extinction = False
-        pygame.display.set_caption('Evolution')
+        pygame.display.set_caption('Evolution Simulator')
         pygame.init()
 
         self.cicle_time = 0
         self.total_cicle_time = 0
 
-        # numpy arrays to store integer values
-        self.death_age = np.array([])
-        self.velocity = np.array([])
+        self.simulation_velocity = np.array([])
 
         self.average_velocity = pd.DataFrame(columns=['velocity', 'day'])
-        self.average_death_age = pd.DataFrame(columns=['age', 'day'])
+        self.average_age = pd.DataFrame(columns=['age', 'day'])
 
-        self.population_limit = 100
+        self.day_velocities = np.array([])
+        self.day_ages = np.array([])
+
+        self.population_limit = 1000
 
     def load_configs(self):
 
@@ -78,7 +87,7 @@ class Game(object):
         print("creating creatures...")
         for i in range(self.initial_creatures):
             velocity = random.randint(30, 100)
-            if (self.consider_sex):
+            if self.consider_sex:
                 creature_sex = random.randint(0, 1)
                 self.universe.create_creature(self.screen, velocity, sex=creature_sex)
 
@@ -110,9 +119,22 @@ class Game(object):
         self.life_checks()
         self.check_creatures(True)
         pygame.display.update()
-
+        self.compute_stats()
         self.evaluate_cicle_time()
         self.print_stats()
+        self.clear_day_data()
+
+    def compute_stats(self):
+        day = int(game.universe.cicles / self.cicle_size)
+        self.average_velocity = pd.concat([self.average_velocity, pd.DataFrame(
+            {'velocity': [self.day_velocities.mean()], 'day': [day]})])
+
+        self.average_age = pd.concat([self.average_age, pd.DataFrame(
+            {'age': [self.day_ages.mean()], 'day': [day]})])
+
+    def clear_day_data(self):
+        self.day_velocities = np.array([])
+        self.day_ages = np.array([])
 
     def life_checks(self):
         self.check_food(True)
@@ -138,23 +160,23 @@ class Game(object):
         self.universe.count_cicles()
 
     def check_if_coordenates_inside_screen(self, x, y):
-        if (x >= self.screen.width):
+        if x >= self.screen.width:
             return False
-        elif (y >= self.screen.height):
+        elif y >= self.screen.height:
             return False
         else:
             return True
 
     def check_creature_life(self, creature):
+        # print("creature velocity: ", creature.velocity)
         alive = creature.is_alive()
+        self.day_ages = np.append(self.day_ages, int(creature.age / self.cicle_size))
+        self.day_velocities = np.append(self.day_velocities, creature.get_velocity())
         if not alive:
             if creature.energy <= 0:
                 self.hungry_deaths += 1
             else:
                 self.age_deaths += 1
-
-            self.death_age = np.append(self.death_age, int(creature.age / self.cicle_size))
-            self.velocity = np.append(self.velocity, creature.get_velocity() / self.cicle_size)
             self.remove_creature(creature)
 
     def handle_creature_close_to_food(self, creature, x, y):
@@ -228,6 +250,7 @@ class Game(object):
         self.universe.create_creature(self.screen, new_velocity)
 
     def check_food_is_expired(self, food):
+        food.expire()
         expired = food.is_expired()
         if expired:
             self.universe.remove_food(food)
@@ -262,27 +285,21 @@ class Game(object):
     def print_stats(self):
         objects = self.universe.food_count + self.universe.population
         velocity = (self.total_cicle_time / objects) * 1000
-        average_death_age = np.average(self.death_age)
-        averate_creature_velocity = np.average(self.velocity)
-
         day = game.universe.cicles / self.cicle_size
-
-        # using pandas concat to add to dataframe
-        self.average_death_age = pd.concat([self.average_death_age, pd.DataFrame([average_death_age])])
-
-        self.average_velocity = pd.concat([self.average_velocity, pd.DataFrame([averate_creature_velocity])])
+        average_creature_velocity = self.average_velocity.iloc[-1]['velocity']
+        average_creature_age = self.average_age.iloc[-1]['age']
+        self.simulation_velocity = np.append(self.simulation_velocity, velocity)
 
         print("Population: ", self.universe.population)
         print("Food: ", self.universe.food_count)
         print("Day: %d" % day)
-        print("Average death age: %2f" % (average_death_age))
-        print("Average velocity: %2f" % (averate_creature_velocity))
-        print("Time taken to simulate day (s): %.5f" % (self.total_cicle_time))
-        print("Velocity to simulate (s/obj): %.5f" % (velocity))
+        print("Average creature age: %d days" % average_creature_age)
+        print("Average creature velocity: %d" % average_creature_velocity)
+        print("Time taken to simulate day (s): %.5f" % self.total_cicle_time)
+        print("Velocity to simulate (s/obj): %.5f" % velocity)
 
 
 pygame.quit()
-
 game = Game()
 game.start_world()
 
@@ -298,15 +315,19 @@ while run:
         pass
         break
 
+simulation_average_velocity = np.average(game.simulation_velocity)
 print("Population all times: ", game.universe.all_time_population)
 print("Population record: ", game.population_record)
 print("Cicles simulated: ", game.universe.cicles)
 print("Hungry deaths: ", game.hungry_deaths)
 print("age_deaths: ", game.age_deaths)
 print("Days simulated: %d" % (game.universe.cicles / game.cicle_size))
+print("Average simulation velocity (s/obj): %.5f" % simulation_average_velocity)
+
+# plot average_creature_velocity and age_death_age by day with matplotlib
 
 '''
-plt.plot(game.average_velocity['day'], game.average_velocity['velocity'])
-plt.plot(game.average_death_age['day'], game.average_death_age['age'])
+plt.plot(game.average_velocity['day'], game.average_velocity['velocity'], label='Average velocity')
+plt.plot(game.average_age['day'], game.average_age['age'], label='Average death age')
 plt.show()
 '''
