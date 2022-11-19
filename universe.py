@@ -59,8 +59,6 @@ class Universe(object):
 
 	def remove_food_by_position(self, x, y):
 		food_id = self.food_position_matrix[x][y]
-		if(id == 0):
-			return False
 		return self.remove_food_by_id(food_id)
 
 
@@ -96,8 +94,9 @@ class Universe(object):
 
 	def init_matrix(self):
 		line = [0 for i in range(self.screen.height)]
+		line_food = [0 for i in range(self.screen.height)]
 		self.position_matrix = [line for i in range(self.screen.width)]
-		self.food_position_matrix = self.position_matrix
+		self.food_position_matrix = [line_food for i in range(self.screen.width)]
 
 	def count_cicles(self):
 		self.cicles += 1

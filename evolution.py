@@ -211,9 +211,6 @@ class Game(object):
 			return
 
 		matrix_id = self.universe.get_creature_matrix_id(x, y)
-		if(matrix_id == 0):
-			return
-		
 		if not creature.check_if_able_to_reproduce():
 			return
 		
