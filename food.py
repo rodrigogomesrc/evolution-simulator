@@ -1,34 +1,40 @@
-import pygame
+from color import Color
+from screen_rectangle import ScreenRectangle
+
 
 class Food(object):
+    duration = None
 
-	def __init__(self, window, x_position, y_position, idnumber):
+    def __init__(self, x, y, idnumber):
+        self.x = x
+        self.y = y
+        self.idnumber = idnumber
+        self.duration = Food.duration
+        self.expired = False
 
-		self.window = window
-		self.x_position = x_position
-		self.y_position = y_position
-		self.idnumber = idnumber
-		self.duration = Food.duration
-		self.expired = False
+    def render(self):
+        self.expire()
 
-	def render(self):
-		self.expire()
-		pygame.draw.rect(self.window, (0,255,0), (self.x_position, self.y_position, 10, 10))
+    def is_expired(self):
+        return self.expired
 
-	def is_expired(self):
-		return self.expired
+    def expire(self):
+        self.duration -= 1
 
-	def expire(self):
-		self.duration -= 1
+        if self.duration <= 0:
+            self.expired = True
 
-		if self.duration <= 0:
-			self.expired = True
-	
-	def get_id(self):
-		return self.idnumber
+    def get_id(self):
+        return self.idnumber
 
-	def get_x_position(self):
-		return self.x_position
+    def get_x_position(self):
+        return self.x
 
-	def get_y_position(self):
-		return self.y_position
+    def get_y_position(self):
+        return self.y
+
+    def get_color_object(self):
+        return Color(0, 255, 0)
+
+    def get_screen_rectangle(self):
+        return ScreenRectangle(self.x, self.y, 10, 10)
