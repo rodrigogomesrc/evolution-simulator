@@ -1,231 +1,238 @@
 import random
-import pygame
+from color import Color
+from screen_rectangle import ScreenRectangle
 
 class Creature(object):
-	
-	def __init__(self, window, x_position, y_position, screen_x, screen_y, velocity, size, idnumber, gender):
 
-		self.window = window
-		self.x_position = x_position
-		self.y_position = y_position
-		self.screen_x = screen_x
-		self.screen_y = screen_y
-		self.original_velocity = velocity
-		self.velocity = 100 - velocity
-		self.life = 10000
-		self.age = 0
-		self.size = size
-		self.moving = False
-		self.steps = 0
-		self.walking_direction = 0
-		self.energy = 10000
-		self.energy_max = 10000
-		self.wait_to_velocity = ((100 - velocity) // 10) 
-		self.idnumber = idnumber
-		self.alive = True
-		self.cicles = 0
-		self.energy_expended = (velocity // 30)
-		self.gender = gender
-		self.time_without_reproduction = 0
-		self.reproduction_wait = 1000
-		self.reproduction_age_start = 2000
-		self.reproduction_age_end = 7000
+    def __init__(self, x, y, screen_x, screen_y, velocity, size, idnumber, gender):
 
-		self.mutate()
+        self.x = x
+        self.y = y
+        self.screen_x = screen_x
+        self.screen_y = screen_y
+        self.original_velocity = velocity
+        self.velocity = 100 - velocity
+        self.life = 10000
+        self.age = 0
+        self.size = size
+        self.moving = False
+        self.steps = 0
+        self.walking_direction = 0
+        self.energy = 10000
+        self.energy_max = 10000
+        self.wait_to_velocity = ((100 - velocity) // 10)
+        self.idnumber = idnumber
+        self.alive = True
+        self.cicles = 0
+        self.energy_expended = (velocity // 30)
+        self.gender = gender
+        self.time_without_reproduction = 0
+        self.reproduction_wait = 1000
+        self.reproduction_age_start = 2000
+        self.reproduction_age_end = 7000
 
-	def get_x(self):
-		return self.x_position
+        self.mutate()
 
-	def get_y(self):
-		return self.y_position
+    def get_age(self):
+        return self.age
 
-	def get_velocity(self):
-		return self.velocity
+    def get_x(self):
+        return self.x
 
-	def mutate(self):
+    def set_x(self, x):
+        self.x = x
 
-		life_mutation_range = ((random.randint(0, 30) - 15) / 100) * self.life
-		self.life += life_mutation_range
+    def set_y(self, y):
+        self.y = y
 
-		velocity_mutation_range = ((random.randint(0, 30) - 15) / 100) * self.life
-		self.velocity += velocity_mutation_range
+    def get_y(self):
+        return self.y
 
-		if self.velocity < 0:
-			self.velocity = 0
+    def get_velocity(self):
+        return self.velocity
 
+    def mutate(self):
 
-	def move(self, render=False):
-		
-		self.age_creature()
-		self.use_energy(self.energy_expended)
-		self.cicles += 1
+        life_mutation_range = ((random.randint(0, 30) - 15) / 100) * self.life
+        self.life += life_mutation_range
 
-		if self.wait_to_velocity <= 0:
+        velocity_mutation_range = ((random.randint(0, 30) - 15) / 100) * self.life
+        self.velocity += velocity_mutation_range
 
-			moved = True
+        if self.velocity < 0:
+            self.velocity = 0
 
-			if(self.steps == 0):
+    def move(self):
 
-				self.walking_direction = random.randint(1,9)
-				self.steps = random.randint(10,120)
+        self.age_creature()
+        self.use_energy(self.energy_expended)
+        self.cicles += 1
 
-			else:
-				self.steps -= 1
+        if self.wait_to_velocity <= 0:
 
-			if(self.walking_direction == 1):
-				moved = self.move_up()
+            moved = True
 
-			if(self.walking_direction == 2):
-				moved = self.move_down()
+            if self.steps == 0:
 
-			if(self.walking_direction == 3):
-				moved = self.move_right()
+                self.walking_direction = random.randint(1, 9)
+                self.steps = random.randint(10, 120)
 
-			if(self.walking_direction == 4):
-				moved = self.move_left()
+            else:
+                self.steps -= 1
 
-			if(self.walking_direction == 5):
-				moved = self.move_right_up()
+            if self.walking_direction == 1:
+                moved = self.move_up()
 
-			if(self.walking_direction == 6):
-				moved = self.move_right_down()
+            if self.walking_direction == 2:
+                moved = self.move_down()
 
-			if(self.walking_direction == 7):
-				moved = self.move_left_up()
+            if self.walking_direction == 3:
+                moved = self.move_right()
 
-			if(self.walking_direction == 8):
-				moved = self.move_left_down()
+            if self.walking_direction == 4:
+                moved = self.move_left()
 
-			if not moved:
-				self.steps = 0
+            if self.walking_direction == 5:
+                moved = self.move_right_up()
 
-			self.wait_to_velocity = ((100 - self.velocity) % 10)
+            if self.walking_direction == 6:
+                moved = self.move_right_down()
 
-		self.wait_to_velocity -= 1
+            if self.walking_direction == 7:
+                moved = self.move_left_up()
 
-		if(render):
-			pygame.draw.rect(self.window, (self.get_color(), 0, 255), (self.x_position, self.y_position, 10, 10))
-		
-		return self.x_position, self.y_position
+            if self.walking_direction == 8:
+                moved = self.move_left_down()
 
+            if not moved:
+                self.steps = 0
 
-	def get_color(self):
-		color = int(2 * self.original_velocity)
-		if color > 255:
-			color = 255
+            self.wait_to_velocity = ((100 - self.velocity) % 10)
 
-		if color < 0:
-			color = 0
-			
-		return color
+        self.wait_to_velocity -= 1
+        return self.x, self.y
 
+    def get_color(self):
+        color = int(2 * self.original_velocity)
+        if color > 255:
+            color = 255
 
-	def move_up(self):
+        if color < 0:
+            color = 0
 
-		if(self.y_position + 1 < self.screen_y):
-			self.y_position += 1
-			return True
+        return color
 
-		return False
+    def move_up(self):
 
-	def move_down(self):
+        if self.y + 1 < self.screen_y:
+            self.y += 1
+            return True
 
-		if(self.y_position - 1 > 0):
-			self.y_position -= 1
-			return True
+        return False
 
-		return False
+    def move_down(self):
 
-	def move_right(self):
+        if self.y - 1 > 0:
+            self.y -= 1
+            return True
 
-		if self.x_position + 1 < self.screen_x:
-			self.x_position += 1
-			return True
+        return False
 
-		return False
+    def move_right(self):
 
-	def move_left(self):
+        if self.x + 1 < self.screen_x:
+            self.x += 1
+            return True
 
-		if self.x_position - 1 > 0:
-			self.x_position -= 1
-			return True
+        return False
 
-		return False
+    def move_left(self):
 
-	def move_right_up(self):
+        if self.x - 1 > 0:
+            self.x -= 1
+            return True
 
-		if(self.y_position + 1 < self.screen_y and self.x_position + 1 < self.screen_x):
-			self.y_position += 1
-			self.x_position += 1
-			return True
+        return False
 
-		return False
+    def move_right_up(self):
 
-	def move_right_down(self):
+        if self.y + 1 < self.screen_y and self.x + 1 < self.screen_x:
+            self.y += 1
+            self.x += 1
+            return True
 
-		if(self.y_position - 1 > 0 and self.x_position + 1 < self.screen_x):
-			self.y_position -= 1
-			self.x_position += 1
-			return True
+        return False
 
-		return False
+    def move_right_down(self):
 
-	def move_left_up(self):
+        if self.y - 1 > 0 and self.x + 1 < self.screen_x:
+            self.y -= 1
+            self.x += 1
+            return True
 
-		if(self.y_position + 1 < self.screen_y and self.x_position - 1 > 0):
-			self.y_position += 1
-			self.x_position -= 1
-			return True
+        return False
 
-		return False
+    def move_left_up(self):
 
-	def move_left_down(self):
+        if self.y + 1 < self.screen_y and self.x - 1 > 0:
+            self.y += 1
+            self.x -= 1
+            return True
 
-		if(self.y_position - 1 > 0 and self.x_position - 1 > 0):
-			self.y_position -= 1
-			self.x_position -= 1
-			return True
+        return False
 
-		return False
+    def move_left_down(self):
 
-	def age_creature(self):
+        if self.y - 1 > 0 and self.x - 1 > 0:
+            self.y -= 1
+            self.x -= 1
+            return True
 
-		self.age += 1
+        return False
 
-		if self.age >= self.life:
-			self.alive = False
+    def age_creature(self):
 
-	def use_energy(self, quantity):
-		self.energy -= quantity
-		if self.energy <= 0:
-			self.alive = False
+        self.age += 1
 
-	def check_alive(self):
-		return self.alive
+        if self.age >= self.life:
+            self.alive = False
 
-	def get_id(self):
-		return self.idnumber
+    def use_energy(self, quantity):
+        self.energy -= quantity
+        if self.energy <= 0:
+            self.alive = False
 
-	def eat(self):
+    def is_alive(self):
+        return self.alive
 
-		if self.energy < self.energy_max:
-			self.energy += 50
+    def get_id(self):
+        return self.idnumber
 
-	def check_if_able_to_reproduce(self):
-		self.time_without_reproduction += 1
-		if self.time_without_reproduction < self.reproduction_wait:
-			return False
-		elif self.energy < (self.energy_max / 2):
-			return False
+    def eat(self):
+        if self.energy < self.energy_max:
+            self.energy += 50
 
-		elif self.age < self.reproduction_age_start:
-			return False
+    def get_color_object(self):
+        return Color(self.get_color(), 0, 255)
 
-		elif self.age > self.reproduction_age_end:
-			return False
+    def get_screen_rectangle(self):
+        return ScreenRectangle(self.x, self.y, 10, 10)
 
-		elif self.time_without_reproduction < self.reproduction_wait:
-			return False
+    def check_if_able_to_reproduce(self):
+        self.time_without_reproduction += 1
+        if self.time_without_reproduction < self.reproduction_wait:
+            return False
+        elif self.energy < (self.energy_max / 2):
+            return False
 
-		self.time_without_reproduction = 0
-		return True
+        elif self.age < self.reproduction_age_start:
+            return False
+
+        elif self.age > self.reproduction_age_end:
+            return False
+
+        elif self.time_without_reproduction < self.reproduction_wait:
+            return False
+
+        self.time_without_reproduction = 0
+        return True
