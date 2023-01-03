@@ -14,7 +14,6 @@ class Screen(object):
 
     def render_rectangle(self, window, screen_rectangle, color):
         if window is None or self.__pg is None:
-            print("\n\n\n\n\n Nada encontrado aqui \n\n\n\n\n\n")
             return
 
         r, g, b = color.get_color()
