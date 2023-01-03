@@ -1,5 +1,4 @@
 import random
-import termios
 import importlib
 from screen import Screen
 from universe import Universe
@@ -11,7 +10,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import warnings
+
 warnings.filterwarnings('ignore')  # setting ignore as a parameter
+
 
 class Game(object):
 
@@ -58,7 +59,6 @@ class Game(object):
         else:
             self.display_simulation = False
             self.universe = Universe(None, 10, 10, self.screen, self.pg)
-
 
     def load_configs(self):
 
@@ -326,10 +326,14 @@ class Game(object):
 
 use_pygame = True
 pygame = None
+limit_execution = False
+execution_limit = None
 
 with open('config.json') as configs:
     data = json.load(configs)
     use_pygame = data['displaySimulation']
+    limit_execution = data['limitExecutionInDays']
+    execution_limit = data['daysLimit']
 
 if use_pygame:
     pygame = importlib.import_module('pygame')
@@ -339,6 +343,37 @@ game.start_world()
 run = True
 
 
+def stop_execution(game_obj):
+    if limit_execution:
+        if game_obj.universe.cicles > execution_limit * game_obj.cicle_size:
+            return True
+    if game_obj.extinction:
+        return True
+    return False
+
+
+def print_summary(game_obj):
+    print("\n===============SUMMARY===============")
+    simulation_average_velocity = np.average(game_obj.simulation_velocity)
+    print("Population all times: ", game_obj.universe.all_time_population)
+    print("Population record: ", game_obj.population_record)
+    print("Cicles simulated: ", game_obj.universe.cicles)
+    print("Hungry deaths: ", game_obj.hungry_deaths)
+    print("age_deaths: ", game_obj.age_deaths)
+    print("Days simulated: %d" % (game_obj.universe.cicles / game_obj.cicle_size))
+    print("Average simulation velocity (s/obj): %.5f" % simulation_average_velocity)
+
+
+def plot_history(game_obj):
+    plt.plot(game_obj.average_velocity['day'], game_obj.average_velocity['velocity'], label='Average velocity')
+    plt.plot(game_obj.average_age['day'], game_obj.average_age['age'], label='Average age')
+    plt.title('Average velocity and age by day')
+    plt.xlabel('Day')
+    plt.ylabel('Average velocity and age')
+    plt.legend()
+    plt.show()
+
+
 if use_pygame:
     while run:
         for event in pygame.event.get():
@@ -346,34 +381,19 @@ if use_pygame:
                 run = False
 
         game.loop()
-        if game.extinction:
+        if stop_execution(game):
             break
-
 else:
     while run:
         game.loop()
-        if game.extinction:
+        if stop_execution(game):
             break
 
-
-simulation_average_velocity = np.average(game.simulation_velocity)
-print("Population all times: ", game.universe.all_time_population)
-print("Population record: ", game.population_record)
-print("Cicles simulated: ", game.universe.cicles)
-print("Hungry deaths: ", game.hungry_deaths)
-print("age_deaths: ", game.age_deaths)
-print("Days simulated: %d" % (game.universe.cicles / game.cicle_size))
-print("Average simulation velocity (s/obj): %.5f" % simulation_average_velocity)
 
 run = False
 if use_pygame:
     pygame.quit()
 
-plt.plot(game.average_velocity['day'], game.average_velocity['velocity'], label='Average velocity')
-plt.plot(game.average_age['day'], game.average_age['age'], label='Average age')
-plt.title('Average velocity and age by day')
-plt.xlabel('Day')
-plt.ylabel('Average velocity and age')
-plt.legend()
-plt.show()
 
+print_summary(game)
+plot_history(game)

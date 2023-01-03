@@ -7,5 +7,7 @@
     "screenHeight": 600,
     "foodDuration": 10,
     "considerTwoSexes": false,
-    "displaySimulation": true
+    "displaySimulation": true,
+    "limitExecutionInDays": false,
+    "daysLimit": 100
 }
