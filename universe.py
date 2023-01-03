@@ -40,7 +40,18 @@ class Universe(object):
         self.current_id += 1
         return str(self.current_id)
 
-    # initialize available positions based on tuples of the screen size
+    def get_food_count(self):
+        return self.food_count
+
+    def get_population(self):
+        return self.population
+
+    def get_all_time_population(self):
+        return self.all_time_population
+
+    def get_cicles(self):
+        return self.cicles
+
     def init_available_positions(self):
         for x in range(self.screen.width):
             for y in range(self.screen.height):
