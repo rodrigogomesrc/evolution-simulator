@@ -298,11 +298,8 @@ class Game(object):
         print("Time taken to simulate day (s): %.5f" % self.total_cicle_time)
         print("Velocity to simulate (s/obj): %.5f" % velocity)
 
-
-pygame.quit()
 game = Game()
 game.start_world()
-
 run = True
 
 while run:
@@ -324,10 +321,16 @@ print("age_deaths: ", game.age_deaths)
 print("Days simulated: %d" % (game.universe.cicles / game.cicle_size))
 print("Average simulation velocity (s/obj): %.5f" % simulation_average_velocity)
 
-# plot average_creature_velocity and age_death_age by day with matplotlib
 
-'''
+run = False
+pygame.quit()
+
+# plot average_creature_velocity and age_death_age by day with matplotlib and with title and legends
 plt.plot(game.average_velocity['day'], game.average_velocity['velocity'], label='Average velocity')
-plt.plot(game.average_age['day'], game.average_age['age'], label='Average death age')
+plt.plot(game.average_age['day'], game.average_age['age'], label='Average age')
+plt.title('Average velocity and age by day')
+plt.xlabel('Day')
+plt.ylabel('Average velocity and age')
+plt.legend()
 plt.show()
-'''
+
