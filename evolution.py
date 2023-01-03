@@ -124,7 +124,7 @@ class Game(object):
                 self.__screen = Screen(width, height, None)
 
             self.__food_wait = data['ciclesToSpawnFood']
-            Food.duration = data['foodDuration']
+            Food.determined_duration = data['foodDuration']
             self.__consider_sex = data['considerTwoSexes']
 
     def get_random_position(self):
