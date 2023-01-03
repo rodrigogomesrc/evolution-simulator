@@ -240,10 +240,10 @@ class Game(object):
     def check_creature_life(self, creature):
         # print("creature velocity: ", creature.velocity)
         alive = creature.is_alive()
-        self.__day_ages = np.append(self.__day_ages, int(creature.age / self.__cicle_size))
+        self.__day_ages = np.append(self.__day_ages, int(creature.get_age() / self.__cicle_size))
         self.__day_velocities = np.append(self.__day_velocities, creature.get_velocity())
         if not alive:
-            if creature.energy <= 0:
+            if creature.get_energy() <= 0:
                 self.__hungry_deaths += 1
             else:
                 self.__age_deaths += 1
