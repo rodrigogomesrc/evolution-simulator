@@ -3,35 +3,35 @@ from screen_rectangle import ScreenRectangle
 
 
 class Food(object):
-    duration = None
+    determined_duration = None
 
     def __init__(self, x, y, idnumber):
-        self.x = x
-        self.y = y
-        self.idnumber = idnumber
-        self.duration = Food.duration
-        self.expired = False
+        self.__x = x
+        self.__y = y
+        self.__idnumber = idnumber
+        self.__duration = Food.determined_duration
+        self.__expired = False
 
     def is_expired(self):
-        return self.expired
+        return self.__expired
 
     def expire(self):
-        self.duration -= 1
+        self.__duration -= 1
 
-        if self.duration <= 0:
-            self.expired = True
+        if self.__duration <= 0:
+            self.__expired = True
 
     def get_id(self):
-        return self.idnumber
+        return self.__idnumber
 
     def get_x_position(self):
-        return self.x
+        return self.__x
 
     def get_y_position(self):
-        return self.y
+        return self.__y
 
     def get_color_object(self):
         return Color(0, 255, 0)
 
     def get_screen_rectangle(self):
-        return ScreenRectangle(self.x, self.y, 10, 10)
+        return ScreenRectangle(self.__x, self.__y, 10, 10)
