@@ -1,5 +1,6 @@
-import pygame
 import random
+import termios
+import importlib
 from screen import Screen
 from universe import Universe
 from food import Food
@@ -10,14 +11,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import warnings
-
 warnings.filterwarnings('ignore')  # setting ignore as a parameter
-
 
 class Game(object):
 
-    def __init__(self):
+    def __init__(self, pygame_object):
 
+        self.pg = pygame_object
         self.consider_sex = None
         self.food_wait = None
         self.screen = None
@@ -25,14 +25,14 @@ class Game(object):
         self.initial_food = None
         self.cicle_size = None
         self.load_configs()
-        self.window = pygame.display.set_mode((self.screen.width, self.screen.height))
-        self.universe = Universe(self.window, 10, 10, self.screen)
+        self.display_simulation = True
+
         self.population_record = 0
         self.hungry_deaths = 0
         self.age_deaths = 0
         self.extinction = False
-        pygame.display.set_caption('Evolution Simulator')
-        pygame.init()
+
+        self.init_pygame(pygame_object)
 
         self.cicle_time = 0
         self.total_cicle_time = 0
@@ -47,6 +47,19 @@ class Game(object):
 
         self.population_limit = 1000
 
+    def init_pygame(self, pygameObject):
+        if pygameObject is not None:
+            self.display_simulation = True
+            pygame.display.set_caption('Evolution Simulator')
+            pygame.init()
+            self.window = self.pg.display.set_mode((self.screen.width, self.screen.height))
+            self.universe = Universe(self.window, 10, 10, self.screen, self.pg)
+
+        else:
+            self.display_simulation = False
+            self.universe = Universe(None, 10, 10, self.screen, self.pg)
+
+
     def load_configs(self):
 
         with open('config.json') as configs:
@@ -57,7 +70,13 @@ class Game(object):
 
             width = data['screenWidth']
             height = data['screenHeight']
-            self.screen = Screen(width, height)
+
+            display_simulation = data['displaySimulation']
+            if display_simulation:
+                self.screen = Screen(width, height, self.pg)
+
+            else:
+                self.screen = Screen(width, height, None)
 
             self.food_wait = data['ciclesToSpawnFood']
             Food.duration = data['foodDuration']
@@ -115,10 +134,16 @@ class Game(object):
             self.extinction = True
 
     def daily_checks(self):
-        self.window.fill((255, 255, 255))
-        self.life_checks()
-        self.check_creatures(True)
-        pygame.display.update()
+
+        if self.display_simulation:
+            self.window.fill((255, 255, 255))
+
+        self.life_checks(render=self.display_simulation)
+        self.check_creatures(render=self.display_simulation)
+
+        if self.display_simulation:
+            self.pg.display.update()
+
         self.compute_stats()
         self.evaluate_cicle_time()
         self.print_stats()
@@ -136,8 +161,8 @@ class Game(object):
         self.day_velocities = np.array([])
         self.day_ages = np.array([])
 
-    def life_checks(self):
-        self.check_food(True)
+    def life_checks(self, render=True):
+        self.check_food(render)
         self.check_creatures_lives()
 
     def check_creatures_lives(self):
@@ -298,19 +323,38 @@ class Game(object):
         print("Time taken to simulate day (s): %.5f" % self.total_cicle_time)
         print("Velocity to simulate (s/obj): %.5f" % velocity)
 
-game = Game()
+
+use_pygame = True
+pygame = None
+
+with open('config.json') as configs:
+    data = json.load(configs)
+    use_pygame = data['displaySimulation']
+
+if use_pygame:
+    pygame = importlib.import_module('pygame')
+
+game = Game(pygame)
 game.start_world()
 run = True
 
-while run:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
 
-    game.loop()
-    if game.extinction == True:
-        pass
-        break
+if use_pygame:
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+        game.loop()
+        if game.extinction:
+            break
+
+else:
+    while run:
+        game.loop()
+        if game.extinction:
+            break
+
 
 simulation_average_velocity = np.average(game.simulation_velocity)
 print("Population all times: ", game.universe.all_time_population)
@@ -321,11 +365,10 @@ print("age_deaths: ", game.age_deaths)
 print("Days simulated: %d" % (game.universe.cicles / game.cicle_size))
 print("Average simulation velocity (s/obj): %.5f" % simulation_average_velocity)
 
-
 run = False
-pygame.quit()
+if use_pygame:
+    pygame.quit()
 
-# plot average_creature_velocity and age_death_age by day with matplotlib and with title and legends
 plt.plot(game.average_velocity['day'], game.average_velocity['velocity'], label='Average velocity')
 plt.plot(game.average_age['day'], game.average_age['age'], label='Average age')
 plt.title('Average velocity and age by day')

@@ -1,13 +1,13 @@
 import random
-import pygame
 from creature import Creature
 from food import Food
 
 
 class Universe(object):
 
-    def __init__(self, window, velocity, creatures_size, screen):
+    def __init__(self, window, velocity, creatures_size, screen, pygame_object):
 
+        self.pg = pygame_object
         self.window = window
         self.velocity = velocity
         self.creatures_size = creatures_size
@@ -31,6 +31,10 @@ class Universe(object):
         self.init_available_positions()
 
         self.current_id = 0
+        self.render = True
+
+        if window is None or pygame_object is None:
+            self.render = False
 
     def get_id(self):
         self.current_id += 1
@@ -125,7 +129,9 @@ class Universe(object):
 
         self.creatures_available_positions.remove((x, y))
 
-        pygame.draw.rect(self.window, (0, 0, 255), (x, y, 10, 10))
+        if self.render:
+            self.pg.draw.rect(self.window, (0, 0, 255), (x, y, 10, 10))
+
 
     def create_food(self):
 
@@ -149,7 +155,9 @@ class Universe(object):
         self.food_dict[id] = new_food
         self.food_position_matrix[x][y] = id
 
-        pygame.draw.rect(self.window, (0, 255, 0), (x, y, 8, 8))
+        if self.render:
+            self.pg.draw.rect(self.window, (0, 255, 0), (x, y, 8, 8))
+
 
     def get_creature_matrix_id(self, x, y):
         return self.position_matrix[x][y]

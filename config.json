@@ -6,5 +6,6 @@
     "screenWidth": 1000,
     "screenHeight": 600,
     "foodDuration": 10,
-    "considerTwoSexes": false
+    "considerTwoSexes": false,
+    "displaySimulation": true
 }
