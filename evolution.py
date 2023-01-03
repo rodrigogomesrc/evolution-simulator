@@ -53,7 +53,7 @@ class Game(object):
             self.__display_simulation = True
             pygame.display.set_caption('Evolution Simulator')
             pygame.init()
-            self.window = self.__pg.display.set_mode((self.__screen.width, self.__screen.height))
+            self.window = self.__pg.display.set_mode((self.__screen.get_width(), self.__screen.get_height()))
             self.universe = Universe(self.window, 10, 10, self.__screen, self.__pg)
 
         else:
@@ -125,8 +125,8 @@ class Game(object):
             self.__consider_sex = data['considerTwoSexes']
 
     def get_random_position(self):
-        x = random.randint(0, self.__screen.width - 1)
-        y = random.randint(0, self.__screen.height - 1)
+        x = random.randint(0, self.__screen.__width - 1)
+        y = random.randint(0, self.__screen.get_height() - 1)
         return x, y
 
     def render_rood(self, food):
@@ -227,9 +227,9 @@ class Game(object):
         self.universe.count_cicles()
 
     def check_if_coordenates_inside_screen(self, x, y):
-        if x >= self.__screen.width:
+        if x >= self.__screen.get_width():
             return False
-        elif y >= self.__screen.height:
+        elif y >= self.__screen.get_height():
             return False
         else:
             return True

@@ -53,14 +53,14 @@ class Universe(object):
         return self.cicles
 
     def init_available_positions(self):
-        for x in range(self.screen.width):
-            for y in range(self.screen.height):
+        for x in range(self.screen.get_width()):
+            for y in range(self.screen.get_height()):
                 self.creatures_available_positions.add((x, y))
                 self.food_available_positions.add((x, y))
 
     def get_random_position(self):
-        x = random.randint(0, self.screen.width - 1)
-        y = random.randint(0, self.screen.height - 1)
+        x = random.randint(0, self.screen.get_width() - 1)
+        y = random.randint(0, self.screen.get_height() - 1)
         return x, y
 
     def remove_from_creatures_coordenates(self, x, y):
@@ -105,10 +105,10 @@ class Universe(object):
         self.creatures_available_positions.add((creature.get_x(), creature.get_y()))
 
     def init_matrix(self):
-        line = [0 for i in range(self.screen.height)]
-        line_food = [0 for i in range(self.screen.height)]
-        self.position_matrix = [line for i in range(self.screen.width)]
-        self.food_position_matrix = [line_food for i in range(self.screen.width)]
+        line = [0 for i in range(self.screen.get_height())]
+        line_food = [0 for i in range(self.screen.get_height())]
+        self.position_matrix = [line for i in range(self.screen.get_width())]
+        self.food_position_matrix = [line_food for i in range(self.screen.get_width())]
 
     def count_cicles(self):
         self.cicles += 1
@@ -126,11 +126,11 @@ class Universe(object):
         id = self.get_id()
 
         if sex:
-            new_creature = Creature(x, y, screen.width,
-                                    screen.height, velocity, self.creatures_size, id, sex)
+            new_creature = Creature(x, y, screen.get_width(),
+                                    screen.get_height(), velocity, self.creatures_size, id, sex)
         else:
             creature_sex = None
-            new_creature = Creature(x, y, screen.width, screen.height,
+            new_creature = Creature(x, y, screen.get_width(), screen.get_height(),
                                     velocity, self.creatures_size, id, creature_sex)
 
         self.creatures_dict[id] = new_creature
