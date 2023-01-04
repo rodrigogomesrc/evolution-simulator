@@ -5,9 +5,6 @@ from universe import Universe
 from food import Food
 from timeit import default_timer as timer
 import json
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 
 import warnings
 
@@ -16,43 +13,62 @@ warnings.filterwarnings('ignore')  # setting ignore as a parameter
 
 class Game(object):
 
-    def __init__(self, pygame_object):
+    def __init__(self, pygame_object, numpy_object, pandas_object):
 
         self.__universe = None
         self.__window = None
+
         self.__pg = pygame_object
-        self.__consider_sex = None
+        self.__np = numpy_object
+        self.__pd = pandas_object
+
+        self.__consider_sex = False
         self.__food_wait = None
         self.__screen = None
         self.__initial_creatures = None
         self.__initial_food = None
         self.__cicle_size = None
+
         self.__display_simulation = True
+        self.__print_stats = True
         self.__limit_population = False
         self.__population_limit = None
 
-        self.load_configs()
+        self.__load_configs()
 
         self.__population_record = 0
         self.__hungry_deaths = 0
         self.__age_deaths = 0
         self.__extinction = False
 
-        self.init_pygame(pygame_object)
+        self.__average_velocity = None
+        self.__average_age = None
+        self.__day_velocities = None
+        self.__day_ages = None
+        self.__simulation_velocity = None
+
+        self.__init_pygame(pygame_object)
+        self.__init_stats(numpy_object, pandas_object)
 
         self.__cicle_time = 0
         self.__total_cicle_time = 0
 
-        self.__simulation_velocity = np.array([])
 
-        self.__average_velocity = pd.DataFrame(columns=['velocity', 'day'])
-        self.__average_age = pd.DataFrame(columns=['age', 'day'])
 
-        self.__day_velocities = np.array([])
-        self.__day_ages = np.array([])
+    def __init_stats(self, numpy_object, pandas_object):
 
-    def init_pygame(self, pygameObject):
-        if pygameObject is not None:
+        if numpy_object is None or pandas_object is None:
+            self.__print_stats = False
+            return
+
+        self.__average_velocity = self.__pd.DataFrame(columns=['velocity', 'day'])
+        self.__average_age = self.__pd.DataFrame(columns=['age', 'day'])
+        self.__day_velocities = self.__np.array([])
+        self.__day_ages = self.__np.array([])
+        self.__simulation_velocity = self.__np.array([])
+
+    def __init_pygame(self, pygame_object):
+        if pygame_object is not None:
             self.__display_simulation = True
             pygame.display.set_caption('Evolution Simulator')
             pygame.init()
@@ -63,7 +79,7 @@ class Game(object):
             self.__display_simulation = False
             self.__universe = Universe(None, 10, 10, self.__screen, self.__pg)
 
-    def load_configs(self):
+    def __load_configs(self):
 
         with open('config.json') as config_data:
             config_data = json.load(config_data)
@@ -74,11 +90,9 @@ class Game(object):
 
             if self.__limit_population:
                 self.__population_limit = config_data['populationLimit']
-                print(self.__population_limit)
 
             else:
                 self.__population_limit = float('inf')
-                print(self.__population_limit)
 
             width = config_data['screenWidth']
             height = config_data['screenHeight']
@@ -207,16 +221,20 @@ class Game(object):
         self.clear_day_data()
 
     def compute_stats(self):
+        if not self.__print_stats:
+            return
         day = int(game.get_universe().get_cicles() / self.__cicle_size)
-        self.__average_velocity = pd.concat([self.__average_velocity, pd.DataFrame(
+        self.__average_velocity = self.__pd.concat([self.__average_velocity, self.__pd.DataFrame(
             {'velocity': [self.__day_velocities.mean()], 'day': [day]})])
 
-        self.__average_age = pd.concat([self.__average_age, pd.DataFrame(
+        self.__average_age = self.__pd.concat([self.__average_age, self.__pd.DataFrame(
             {'age': [self.__day_ages.mean()], 'day': [day]})])
 
     def clear_day_data(self):
-        self.__day_velocities = np.array([])
-        self.__day_ages = np.array([])
+        if not self.__print_stats:
+            return
+        self.__day_velocities = self.__np.array([])
+        self.__day_ages = self.__np.array([])
 
     def life_checks(self, render=True):
         self.check_food(render)
@@ -252,8 +270,9 @@ class Game(object):
     def check_creature_life(self, creature):
         # print("creature velocity: ", creature.velocity)
         alive = creature.is_alive()
-        self.__day_ages = np.append(self.__day_ages, int(creature.get_age() / self.__cicle_size))
-        self.__day_velocities = np.append(self.__day_velocities, creature.get_velocity())
+        if self.__print_stats:
+            self.__day_ages = self.__np.append(self.__day_ages, int(creature.get_age() / self.__cicle_size))
+            self.__day_velocities = self.__np.append(self.__day_velocities, creature.get_velocity())
         if not alive:
             if creature.get_energy() <= 0:
                 self.__hungry_deaths += 1
@@ -368,21 +387,28 @@ class Game(object):
         objects = self.__universe.get_food_count() + self.__universe.get_population()
         velocity = (self.__total_cicle_time / objects) * 1000
         day = game.get_universe().get_cicles() / self.__cicle_size
-        average_creature_velocity = self.__average_velocity.iloc[-1]['velocity']
-        average_creature_age = self.__average_age.iloc[-1]['age']
-        self.__simulation_velocity = np.append(self.__simulation_velocity, velocity)
 
         print("Population: ", self.__universe.get_population())
         print("Food: ", self.__universe.get_food_count())
         print("Day: %d" % day)
-        print("Average creature age: %d days" % average_creature_age)
-        print("Average creature velocity: %d" % average_creature_velocity)
+
         print("Time taken to simulate day (s): %.5f" % self.__total_cicle_time)
         print("Velocity to simulate (s/obj): %.5f" % velocity)
 
+        if self.__print_stats:
+            average_creature_velocity = self.__average_velocity.iloc[-1]['velocity']
+            average_creature_age = self.__average_age.iloc[-1]['age']
+            self.__simulation_velocity = self.__np.append(self.__simulation_velocity, velocity)
+            print("Average creature age: %d days" % average_creature_age)
+            print("Average creature velocity: %d" % average_creature_velocity)
+
 
 use_pygame = True
+render_stats = True
 pygame = None
+numpy = None
+pandas = None
+plt = None
 limit_execution = False
 execution_limit = None
 
@@ -391,14 +417,19 @@ with open('config.json') as configs:
     use_pygame = data['displaySimulation']
     limit_execution = data['limitExecutionInDays']
     execution_limit = data['daysLimit']
+    render_stats = data['printStats']
 
 if use_pygame:
     pygame = importlib.import_module('pygame')
 
-game = Game(pygame)
+if render_stats:
+    numpy = importlib.import_module('numpy')
+    pandas = importlib.import_module('pandas')
+    plt = importlib.import_module('matplotlib.pyplot')
+
+game = Game(pygame, numpy, pandas)
 game.start_world()
 run = True
-
 
 def stop_execution(game_obj):
     if limit_execution:
@@ -411,14 +442,16 @@ def stop_execution(game_obj):
 
 def print_summary(game_obj):
     print("\n===============SUMMARY===============")
-    simulation_average_velocity = np.average(game_obj.get_simulation_velocity())
     print("Population all times: ", game_obj.get_universe().get_all_time_population())
     print("Population record: ", game_obj.get_population_record())
     print("Cicles simulated: ", game_obj.get_universe().get_cicles())
     print("Hungry deaths: ", game_obj.get_hungry_deaths())
     print("age_deaths: ", game_obj.get_hungry_deaths())
     print("Days simulated: %d" % (game_obj.get_universe().get_cicles() / game_obj.get_cicle_size()))
-    print("Average simulation velocity (s/obj): %.5f" % simulation_average_velocity)
+
+    if render_stats:
+        simulation_average_velocity = numpy.average(game_obj.get_simulation_velocity())
+        print("Average simulation velocity (s/obj): %.5f" % simulation_average_velocity)
 
 
 def plot_history(game_obj):
@@ -452,4 +485,6 @@ if use_pygame:
     pygame.quit()
 
 print_summary(game)
-plot_history(game)
+
+if render_stats:
+    plot_history(game)
