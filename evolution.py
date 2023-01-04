@@ -18,6 +18,8 @@ class Game(object):
 
     def __init__(self, pygame_object):
 
+        self.__universe = None
+        self.__window = None
         self.__pg = pygame_object
         self.__consider_sex = None
         self.__food_wait = None
@@ -25,8 +27,11 @@ class Game(object):
         self.__initial_creatures = None
         self.__initial_food = None
         self.__cicle_size = None
-        self.load_configs()
         self.__display_simulation = True
+        self.__limit_population = False
+        self.__population_limit = None
+
+        self.load_configs()
 
         self.__population_record = 0
         self.__hungry_deaths = 0
@@ -46,19 +51,48 @@ class Game(object):
         self.__day_velocities = np.array([])
         self.__day_ages = np.array([])
 
-        self.__population_limit = 1000
-
     def init_pygame(self, pygameObject):
         if pygameObject is not None:
             self.__display_simulation = True
             pygame.display.set_caption('Evolution Simulator')
             pygame.init()
-            self.window = self.__pg.display.set_mode((self.__screen.get_width(), self.__screen.get_height()))
-            self.__universe = Universe(self.window, 10, 10, self.__screen, self.__pg)
+            self.__window = self.__pg.display.set_mode((self.__screen.get_width(), self.__screen.get_height()))
+            self.__universe = Universe(self.__window, 10, 10, self.__screen, self.__pg)
 
         else:
             self.__display_simulation = False
             self.__universe = Universe(None, 10, 10, self.__screen, self.__pg)
+
+    def load_configs(self):
+
+        with open('config.json') as config_data:
+            config_data = json.load(config_data)
+            self.__cicle_size = config_data['cicleSize']
+            self.__initial_food = config_data['initialFood']
+            self.__initial_creatures = config_data['initialCreatures']
+            self.__limit_population = config_data['limitPopulation']
+
+            if self.__limit_population:
+                self.__population_limit = config_data['populationLimit']
+                print(self.__population_limit)
+
+            else:
+                self.__population_limit = float('inf')
+                print(self.__population_limit)
+
+            width = config_data['screenWidth']
+            height = config_data['screenHeight']
+
+            display_simulation = config_data['displaySimulation']
+            if display_simulation:
+                self.__screen = Screen(width, height, self.__pg)
+
+            else:
+                self.__screen = Screen(width, height, None)
+
+            self.__food_wait = config_data['ciclesToSpawnFood']
+            Food.determined_duration = config_data['foodDuration']
+            self.__consider_sex = config_data['considerTwoSexes']
 
     def get_cicle_size(self):
         return self.__cicle_size
@@ -105,28 +139,6 @@ class Game(object):
     def get_universe(self):
         return self.__universe
 
-    def load_configs(self):
-
-        with open('config.json') as configs:
-            data = json.load(configs)
-            self.__cicle_size = data['cicleSize']
-            self.__initial_food = data['initialFood']
-            self.__initial_creatures = data['initialCreatures']
-
-            width = data['screenWidth']
-            height = data['screenHeight']
-
-            display_simulation = data['displaySimulation']
-            if display_simulation:
-                self.__screen = Screen(width, height, self.__pg)
-
-            else:
-                self.__screen = Screen(width, height, None)
-
-            self.__food_wait = data['ciclesToSpawnFood']
-            Food.determined_duration = data['foodDuration']
-            self.__consider_sex = data['considerTwoSexes']
-
     def get_random_position(self):
         x = random.randint(0, self.__screen.__width - 1)
         y = random.randint(0, self.__screen.get_height() - 1)
@@ -135,12 +147,12 @@ class Game(object):
     def render_rood(self, food):
         rectangle = food.get_screen_rectangle()
         color = food.get_color_object()
-        self.__screen.render_rectangle(self.window, rectangle, color)
+        self.__screen.render_rectangle(self.__window, rectangle, color)
 
     def render_creature(self, creature):
         rectangle = creature.get_screen_rectangle()
         color = creature.get_color_object()
-        self.__screen.render_rectangle(self.window, rectangle, color)
+        self.__screen.render_rectangle(self.__window, rectangle, color)
 
     def start_world(self):
 
@@ -181,7 +193,7 @@ class Game(object):
     def daily_checks(self):
 
         if self.__display_simulation:
-            self.window.fill((255, 255, 255))
+            self.__window.fill((255, 255, 255))
 
         self.life_checks(render=self.__display_simulation)
         self.check_creatures(render=self.__display_simulation)
@@ -299,7 +311,7 @@ class Game(object):
 
     def check_reproduction(self, creature, x, y):
 
-        if self.__universe.get_population() > self.__population_limit:
+        if self.__universe.get_population() >= self.__population_limit:
             return
 
         matrix_id = self.__universe.get_creature_matrix_id(x, y)
@@ -410,7 +422,8 @@ def print_summary(game_obj):
 
 
 def plot_history(game_obj):
-    plt.plot(game_obj.get_average_velocity()['day'], game_obj.get_average_velocity()['velocity'], label='Average velocity')
+    plt.plot(game_obj.get_average_velocity()['day'], game_obj.get_average_velocity()['velocity'],
+             label='Average velocity')
     plt.plot(game_obj.get_average_age()['day'], game_obj.get_average_age()['age'], label='Average age')
     plt.title('Average velocity and age by day')
     plt.xlabel('Day')
@@ -434,11 +447,9 @@ else:
         if stop_execution(game):
             break
 
-
 run = False
 if use_pygame:
     pygame.quit()
-
 
 print_summary(game)
 plot_history(game)
