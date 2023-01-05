@@ -300,7 +300,7 @@ class Game(object):
 
         if self.__save_stats:
             self.__day_velocities_native.append(creature.get_velocity())
-            self.__day_ages_native.append(creature.get_age())
+            self.__day_ages_native.append(int(creature.get_age() / self.__cicle_size))
 
         if self.__print_stats:
             self.__day_ages = self.__np.append(self.__day_ages, int(creature.get_age() / self.__cicle_size))
