@@ -68,7 +68,7 @@ class Game(object):
             self.__print_stats = False
             return
 
-        self.__running_stats = self.__pd.DataFrame(columns=['velocity', 'day', 'age', 'population'])
+        self.__running_stats = self.__pd.DataFrame(columns=['velocity', 'day', 'age', 'population', 'food'])
 
         self.__day_velocities = self.__np.array([])
         self.__day_ages = self.__np.array([])
@@ -246,13 +246,14 @@ class Game(object):
             self.__running_stats = self.__pd.concat([self.__running_stats, self.__pd.DataFrame(
                 {'age': [self.__day_ages.mean()],
                  'day': [day], 'velocity': [self.__day_velocities.mean()],
-                 'population': [self.__universe.get_population()]
+                 'population': [self.__universe.get_population()],
+                 'food': [self.__universe.get_food_count()]
                  })])
 
         if self.__save_stats:
             average_age = sum(self.__day_ages_native) / len(self.__day_ages_native)
             average_velocity = sum(self.__day_velocities_native) / len(self.__day_velocities_native)
-            self.__add_to_stats_logs(average_velocity, average_age)
+            self.__add_to_stats_logs(average_velocity, average_age, self.__universe.get_food_count())
 
     def clear_day_data(self):
         if not self.__print_stats:
@@ -389,9 +390,10 @@ class Game(object):
         if expired:
             self.__universe.remove_food(food)
 
-    def __add_to_stats_logs(self, velocity, age):
+    def __add_to_stats_logs(self, velocity, age, food):
         day = int(game.get_universe().get_cicles() / self.__cicle_size)
-        line = str(day) + "," + str(int(velocity)) + "," + str(age) + "," + str(self.get_population()) + "\n"
+        line = str(day) + "," + str(int(velocity)) + "," \
+               + str(age) + "," + str(self.get_population()) + "," + str(food) + "\n"
         self.__stats_log.append(line)
 
     def check_creatures(self, render=False):

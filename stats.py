@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import sys
 
+cols = ['day', 'velocity', 'age', 'population', 'food']
 
 def load_dataframe(filename):
     return pd.read_csv(filename)
@@ -9,31 +10,25 @@ def load_dataframe(filename):
 
 def plot_all_stats(filename):
     df = load_dataframe(filename)
-    df.columns = ['day', 'velocity', 'age', 'population']
-    plt.plot(df['day'], df['velocity'], label='Average velocity')
-    plt.plot(df['day'], df['age'], label='Average age')
-    plt.plot(df['day'], df['population'], label='Population')
-    plt.title('Average velocity and age by day')
-    plt.xlabel('Day')
-    plt.ylabel('Average velocities, age and total population')
-    plt.legend()
-    plt.show()
+    df.columns = cols
+    plot_all_from_dataframe(df)
 
 
 def plot_all_from_dataframe(df):
     plt.plot(df['day'], df['velocity'], label='Average velocity')
     plt.plot(df['day'], df['age'], label='Average age')
     plt.plot(df['day'], df['population'], label='Population')
-    plt.title('Average velocity and age by day')
+    plt.plot(df['day'], df['food'], label='Food')
+    plt.title('Metrics by day')
     plt.xlabel('Day')
-    plt.ylabel('Average velocities, age and total population')
+    plt.ylabel('Metrics')
     plt.legend()
     plt.show()
 
 
 def plot_velocity_and_age(filename):
     df = load_dataframe(filename)
-    df.columns = ['day', 'velocity', 'age', 'population']
+    df.columns = cols
     plt.plot(df['day'], df['velocity'], label='Average velocity')
     plt.plot(df['day'], df['age'], label='Average age')
     plt.title('Average velocity and age by day')
@@ -45,7 +40,7 @@ def plot_velocity_and_age(filename):
 
 def plot_customized(filename, y_labels):
     df = load_dataframe(filename)
-    df.columns = ['day', 'velocity', 'age', 'population']
+    df.columns = cols
     for y_label in y_labels:
         plt.plot(df['day'], df[y_label], label=y_label)
     plt.title('Average velocity and age by day')
