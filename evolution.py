@@ -446,7 +446,7 @@ render_stats = False
 pygame = None
 numpy = None
 pandas = None
-plt = None
+stats = None
 limit_execution = False
 execution_limit = None
 
@@ -463,7 +463,7 @@ if use_pygame:
 if render_stats:
     numpy = importlib.import_module('numpy')
     pandas = importlib.import_module('pandas')
-    plt = importlib.import_module('matplotlib.pyplot')
+    stats = importlib.import_module('stats')
 
 game = Game(pygame, numpy, pandas)
 game.start_world()
@@ -494,14 +494,7 @@ def print_summary(game_obj):
 
 
 def plot_history(game_obj):
-    plt.plot(game_obj.get_stats()['day'], game_obj.get_stats()['velocity'], label='Average velocity')
-    plt.plot(game_obj.get_stats()['day'], game_obj.get_stats()['age'], label='Average age')
-    plt.plot(game_obj.get_stats()['day'], game_obj.get_stats()['population'], label='Population')
-    plt.title('Average velocity and age by day')
-    plt.xlabel('Day')
-    plt.ylabel('Average velocities, age and total population')
-    plt.legend()
-    plt.show()
+    stats.plot_all_from_dataframe(game_obj.get_stats())
 
 
 if use_pygame:
