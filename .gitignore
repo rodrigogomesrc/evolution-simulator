@@ -4,3 +4,4 @@ __pycache__
 _pycache_
 venv
 .idea
+stats.csv

@@ -4,6 +4,8 @@ from screen import Screen
 from universe import Universe
 from food import Food
 from timeit import default_timer as timer
+from stats_io import clear_file
+from stats_io import append_csv_from_list
 import json
 
 import warnings
@@ -33,6 +35,11 @@ class Game(object):
         self.__print_stats = True
         self.__limit_population = False
         self.__population_limit = None
+        self.__save_stats = True
+        self.__stats_log = []
+
+        self.__day_velocities_native = []
+        self.__day_ages_native = []
 
         self.__load_configs()
 
@@ -54,11 +61,15 @@ class Game(object):
 
     def __init_stats(self, numpy_object, pandas_object):
 
+        if self.__save_stats:
+            clear_file('stats.csv')
+
         if numpy_object is None or pandas_object is None:
             self.__print_stats = False
             return
 
         self.__running_stats = self.__pd.DataFrame(columns=['velocity', 'day', 'age', 'population'])
+
         self.__day_velocities = self.__np.array([])
         self.__day_ages = self.__np.array([])
         self.__simulation_velocity = self.__np.array([])
@@ -100,6 +111,13 @@ class Game(object):
             else:
                 self.__screen = Screen(width, height, None)
 
+            to_save_stats = config_data['saveStatsToFile']
+            if to_save_stats:
+                self.__save_stats = True
+
+            else:
+                self.__save_stats = False
+
             self.__food_wait = config_data['ciclesToSpawnFood']
             Food.determined_duration = config_data['foodDuration']
             self.__consider_sex = config_data['considerTwoSexes']
@@ -133,9 +151,6 @@ class Game(object):
 
     def get_population_record(self):
         return self.__population_record
-
-    def get_simulation_velocity(self):
-        return self.__simulation_velocity
 
     def get_population_limit(self):
         return self.__population_limit
@@ -213,21 +228,40 @@ class Game(object):
         self.print_stats()
         self.clear_day_data()
 
-    def compute_stats(self):
-        if not self.__print_stats:
-            return
+    def trigger_stats_save(self):
         day = int(game.get_universe().get_cicles() / self.__cicle_size)
-        self.__running_stats = self.__pd.concat([self.__running_stats, self.__pd.DataFrame(
-            {'age': [self.__day_ages.mean()],
-             'day': [day], 'velocity': [self.__day_velocities.mean()],
-             'population': [self.__universe.get_population()]
-             })])
+        # the bigger the number, the more it takes to save the stats to file (increasing performance and using more ram)
+        if day % 1000 == 0:
+            self.save_stats_to_file()
+
+    def save_stats_to_file(self):
+        if self.__save_stats:
+            append_csv_from_list(self.__stats_log, 'stats.csv')
+            del self.__stats_log[:]
+
+    def compute_stats(self):
+        day = int(game.get_universe().get_cicles() / self.__cicle_size)
+        self.trigger_stats_save()
+        if self.__print_stats:
+            self.__running_stats = self.__pd.concat([self.__running_stats, self.__pd.DataFrame(
+                {'age': [self.__day_ages.mean()],
+                 'day': [day], 'velocity': [self.__day_velocities.mean()],
+                 'population': [self.__universe.get_population()]
+                 })])
+
+        if self.__save_stats:
+            average_age = sum(self.__day_ages_native) / len(self.__day_ages_native)
+            average_velocity = sum(self.__day_velocities_native) / len(self.__day_velocities_native)
+            self.__add_to_stats_logs(average_velocity, average_age)
 
     def clear_day_data(self):
         if not self.__print_stats:
             return
         self.__day_velocities = self.__np.array([])
         self.__day_ages = self.__np.array([])
+
+        del self.__day_velocities_native[:]
+        del self.__day_ages_native[:]
 
     def life_checks(self, render=True):
         self.check_food(render)
@@ -263,9 +297,15 @@ class Game(object):
     def check_creature_life(self, creature):
         # print("creature velocity: ", creature.velocity)
         alive = creature.is_alive()
+
+        if self.__save_stats:
+            self.__day_velocities_native.append(creature.get_velocity())
+            self.__day_ages_native.append(creature.get_age())
+
         if self.__print_stats:
             self.__day_ages = self.__np.append(self.__day_ages, int(creature.get_age() / self.__cicle_size))
             self.__day_velocities = self.__np.append(self.__day_velocities, creature.get_velocity())
+
         if not alive:
             if creature.get_energy() <= 0:
                 self.__hungry_deaths += 1
@@ -349,6 +389,11 @@ class Game(object):
         if expired:
             self.__universe.remove_food(food)
 
+    def __add_to_stats_logs(self, velocity, age):
+        day = int(game.get_universe().get_cicles() / self.__cicle_size)
+        line = str(day) + "," + str(int(velocity)) + "," + str(age) + "," + str(self.get_population()) + "\n"
+        self.__stats_log.append(line)
+
     def check_creatures(self, render=False):
         creatures = self.__universe.get_creature_dict().copy().items()
         for creature_id, creature in creatures:
@@ -396,8 +441,8 @@ class Game(object):
             print("Average creature velocity: %d" % average_creature_velocity)
 
 
-use_pygame = True
-render_stats = True
+use_pygame = False
+render_stats = False
 pygame = None
 numpy = None
 pandas = None
@@ -423,6 +468,7 @@ if render_stats:
 game = Game(pygame, numpy, pandas)
 game.start_world()
 run = True
+
 
 def stop_execution(game_obj):
     if limit_execution:
@@ -474,6 +520,8 @@ else:
             break
 
 run = False
+game.save_stats_to_file()
+
 if use_pygame:
     pygame.quit()
 
