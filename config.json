@@ -7,10 +7,11 @@
     "screenHeight": 600,
     "foodDuration": 10,
     "considerTwoSexes": false,
-    "displaySimulation": true,
+    "displaySimulation": false,
     "limitExecutionInDays": true,
     "daysLimit": 1000,
     "limitPopulation": true,
     "populationLimit": 1000,
-    "printStats": true
+    "printStats": false,
+    "saveStatsToFile": true
 }

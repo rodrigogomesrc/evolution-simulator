@@ -158,7 +158,6 @@ class Universe(object):
         if self.__render:
             self.__pg.draw.rect(self.__window, (0, 0, 255), (x, y, 10, 10))
 
-
     def create_food(self):
 
         # check if there is any available position
@@ -183,7 +182,6 @@ class Universe(object):
 
         if self.__render:
             self.__pg.draw.rect(self.__window, (0, 255, 0), (x, y, 8, 8))
-
 
     def get_creature_matrix_id(self, x, y):
         return self.__position_matrix[x][y]
