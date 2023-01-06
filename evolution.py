@@ -26,6 +26,7 @@ class Game(object):
 
         self.__consider_sex = False
         self.__food_wait = None
+        self.__food_for_cicle = None
         self.__screen = None
         self.__initial_creatures = None
         self.__initial_food = None
@@ -119,6 +120,7 @@ class Game(object):
                 self.__save_stats = False
 
             self.__food_wait = config_data['ciclesToSpawnFood']
+            self.__food_for_cicle = config_data['foodForSpawn']
             Food.determined_duration = config_data['foodDuration']
             self.__consider_sex = config_data['considerTwoSexes']
 
@@ -197,7 +199,8 @@ class Game(object):
 
     def spawn_food(self):
         if self.__food_wait <= 0:
-            self.__universe.create_food()
+            for i in range(self.__food_for_cicle):
+                self.__universe.create_food()
             self.__food_wait = 10
         self.__food_wait -= 1
 
