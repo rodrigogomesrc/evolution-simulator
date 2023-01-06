@@ -7,8 +7,14 @@ class Creature(object):
 
     max_energy = None
     max_age = None
+    min_velocity = None
+    max_velocity = None
+    velocityCostRate = None
     reproduction_energy_cost = None
     reproduction_energy_minimum = None
+    reproduction_age_start = None
+    reproduction_age_end = None
+    mutation_range = None
     food_energy = None
 
     def __init__(self, x, y, screen_x, screen_y, velocity, size, idnumber, gender):
@@ -71,19 +77,32 @@ class Creature(object):
 
     def mutate(self):
 
-        life_mutation_range = ((random.randint(0, 30) - 15) / 100) * self.__life
-        self.__life += life_mutation_range
+        if self.__velocity < 0:
+            self.__velocity = 0
 
-        velocity_mutation_range = ((random.randint(0, 30) - 15) / 100) * self.__life
-        self.__velocity += velocity_mutation_range
+        min_life = int(self.__life - self.__life * Creature.mutation_range)
+        #print("min life", min_life)
+        max_life = int(self.__life + self.__life * Creature.mutation_range)
+        #print("max life", max_life)
+        self.__life += int(random.randint(min_life, max_life))
+
+        #print("velocity: ", self.__velocity)
+        min_velocity = int(self.__velocity - self.__velocity * Creature.mutation_range)
+        #print("min velocity", min_velocity)
+        max_velocity = int(self.__velocity + self.__velocity * Creature.mutation_range)
+        #print("max velocity", max_velocity)
+        self.__velocity += int(random.randint(min_velocity, max_velocity))
 
         if self.__velocity < 0:
             self.__velocity = 0
 
+    def __calculate_energy_expended_when_moving(self):
+        return (self.__velocity / 10) + (Creature.velocityCostRate * self.__velocity) ** 2
+
     def move(self):
 
         self.age_creature()
-        self.__use_energy(self.__energy_expended)
+        self.__use_energy(self.__calculate_energy_expended_when_moving())
         self.__cicles += 1
 
         if self.__wait_to_velocity <= 0:
@@ -255,10 +274,10 @@ class Creature(object):
         elif self.__energy < Creature.reproduction_energy_minimum:
             return False
 
-        elif self.__age < self.__reproduction_age_start:
+        elif self.__age < Creature.reproduction_age_start:
             return False
 
-        elif self.__age > self.__reproduction_age_end:
+        elif self.__age > Creature.reproduction_age_end:
             return False
 
         elif self.__time_without_reproduction < self.__reproduction_wait:

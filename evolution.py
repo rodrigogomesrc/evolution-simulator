@@ -103,6 +103,12 @@ class Game(object):
             Creature.reproduction_energy_cost = config_data['reproductionEnergyCost']
             Creature.food_energy = config_data['foodEnergy']
             Creature.reproduction_energy_minimum = config_data['reproductionEnergyMinimum']
+            Creature.reproduction_age_start = config_data['reproductionAgeStart']
+            Creature.reproduction_age_end = config_data['reproductionAgeEnd']
+            Creature.mutation_range = config_data['mutationRange']
+            Creature.min_velocity = config_data['minCreatureVelocity']
+            Creature.max_velocity = config_data['maxCreatureVelocity']
+            Creature.velocityCostRate = config_data['velocityCostRate']
 
             if self.__limit_population:
                 self.__population_limit = config_data['populationLimit']
@@ -202,7 +208,7 @@ class Game(object):
         for i in range(self.__initial_creatures):
             velocity = random.randint(30, 100)
             max_energy = Creature.max_energy
-            min_energy = int(max_energy / 10)
+            min_energy = int(max_energy / 5)
             energy = self.__get_normal_distribution_random_number(min_energy, max_energy)
             age = self.__get_normal_distribution_random_number(0, Creature.max_age)
 
