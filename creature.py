@@ -5,6 +5,12 @@ from screen_rectangle import ScreenRectangle
 
 class Creature(object):
 
+    max_energy = None
+    max_age = None
+    reproduction_energy_cost = None
+    reproduction_energy_minimum = None
+    food_energy = None
+
     def __init__(self, x, y, screen_x, screen_y, velocity, size, idnumber, gender):
 
         self.__x = x
@@ -13,14 +19,14 @@ class Creature(object):
         self.__screen_y = screen_y
         self.__original_velocity = velocity
         self.__velocity = 100 - velocity
-        self.__life = 10000
+        self.__life = Creature.max_age
         self.__age = 0
         self.__size = size
         self.__moving = False
         self.__steps = 0
         self.__walking_direction = 0
-        self.__energy = 10000
-        self.__energy_max = 10000
+        self.__energy = Creature.max_energy
+        self.__energy_max = Creature.max_energy
         self.__wait_to_velocity = ((100 - velocity) // 10)
         self.__idnumber = idnumber
         self.__alive = True
@@ -32,7 +38,7 @@ class Creature(object):
         self.__reproduction_age_start = 2000
         self.__reproduction_age_end = 7000
 
-        self.reproduction_energy_cost = 3000
+        self.reproduction_energy_cost = Creature.reproduction_energy_cost
 
         self.mutate()
 
@@ -246,7 +252,7 @@ class Creature(object):
         self.__time_without_reproduction += 1
         if self.__time_without_reproduction < self.__reproduction_wait:
             return False
-        elif self.__energy < (self.__energy_max / 2):
+        elif self.__energy < Creature.reproduction_energy_minimum:
             return False
 
         elif self.__age < self.__reproduction_age_start:

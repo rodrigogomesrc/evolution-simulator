@@ -6,6 +6,7 @@ from food import Food
 from timeit import default_timer as timer
 from stats_io import clear_file
 from stats_io import append_csv_from_list
+from creature import Creature
 import json
 
 import warnings
@@ -97,6 +98,12 @@ class Game(object):
             self.__initial_creatures = config_data['initialCreatures']
             self.__limit_population = config_data['limitPopulation']
 
+            Creature.max_age = config_data['maxCreatureAge']
+            Creature.max_energy = config_data['maxCreatureEnergy']
+            Creature.reproduction_energy_cost = config_data['reproductionEnergyCost']
+            Creature.food_energy = config_data['foodEnergy']
+            Creature.reproduction_energy_minimum = config_data['reproductionEnergyMinimum']
+
             if self.__limit_population:
                 self.__population_limit = config_data['populationLimit']
 
@@ -125,7 +132,7 @@ class Game(object):
             Food.determined_duration = config_data['foodDuration']
             self.__consider_sex = config_data['considerTwoSexes']
 
-    def __get_normal_distriution_random_number(self, min_value, max_value):
+    def __get_normal_distribution_random_number(self, min_value, max_value):
         return int((random.uniform(min_value, max_value) + random.uniform(min_value, max_value)) / 2)
 
     def get_cicle_size(self):
@@ -194,9 +201,11 @@ class Game(object):
         print("creating creatures...")
         for i in range(self.__initial_creatures):
             velocity = random.randint(30, 100)
-            # TODO: change later to configurable age and energy
-            energy = self.__get_normal_distriution_random_number(1000, 10000)
-            age = self.__get_normal_distriution_random_number(0, 100)
+            max_energy = Creature.max_energy
+            min_energy = int(max_energy / 10)
+            energy = self.__get_normal_distribution_random_number(min_energy, max_energy)
+            age = self.__get_normal_distribution_random_number(0, Creature.max_age)
+
             if self.__consider_sex:
                 creature_sex = random.randint(0, 1)
                 self.__universe.create_creature(self.__screen, velocity, sex=creature_sex, energy=energy, age=age)
@@ -463,6 +472,9 @@ class Game(object):
 
         print("Population: ", self.__universe.get_population())
         print("Food: ", self.__universe.get_food_count())
+        print("Age deaths: ", self.get_age_deaths())
+        print("Starvation deaths: ", self.get_hungry_deaths())
+        print("Creatures Born: ", self.__creatures_born)
         print("Day: %d" % day)
 
         print("Time taken to simulate day (s): %.5f" % self.__total_cicle_time)
