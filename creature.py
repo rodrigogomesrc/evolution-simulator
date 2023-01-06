@@ -32,6 +32,8 @@ class Creature(object):
         self.__reproduction_age_start = 2000
         self.__reproduction_age_end = 7000
 
+        self.reproduction_energy_cost = 3000
+
         self.mutate()
 
     def get_age(self):
@@ -55,6 +57,12 @@ class Creature(object):
     def get_energy(self):
         return self.__energy
 
+    def set_energy(self, energy):
+        self.__energy = energy
+
+    def set_age(self, age):
+        self.__age = age
+
     def mutate(self):
 
         life_mutation_range = ((random.randint(0, 30) - 15) / 100) * self.__life
@@ -69,7 +77,7 @@ class Creature(object):
     def move(self):
 
         self.age_creature()
-        self.use_energy(self.__energy_expended)
+        self.__use_energy(self.__energy_expended)
         self.__cicles += 1
 
         if self.__wait_to_velocity <= 0:
@@ -201,10 +209,13 @@ class Creature(object):
         if self.__age >= self.__life:
             self.__alive = False
 
-    def use_energy(self, quantity):
-        self.__energy -= quantity
+    def __check_energy_expended(self):
         if self.__energy <= 0:
             self.__alive = False
+
+    def __use_energy(self, quantity):
+        self.__energy -= quantity
+        self.__check_energy_expended()
 
     def is_alive(self):
         return self.__alive
@@ -213,14 +224,23 @@ class Creature(object):
         return self.__idnumber
 
     def eat(self):
-        if self.__energy < self.__energy_max:
-            self.__energy += 50
+        self.__energy += 50
+        if self.__energy > self.__energy_max:
+            self.__energy = self.__energy_max
+
+    def get_gender(self):
+        return self.__gender
 
     def get_color_object(self):
         return Color(self.get_color(), 0, 255)
 
     def get_screen_rectangle(self):
         return ScreenRectangle(self.__x, self.__y, 10, 10)
+
+    def reproduce(self):
+        self.__time_without_reproduction = 0
+        self.__use_energy(self.reproduction_energy_cost)
+        self.__check_energy_expended()
 
     def check_if_able_to_reproduce(self):
         self.__time_without_reproduction += 1
@@ -238,5 +258,4 @@ class Creature(object):
         elif self.__time_without_reproduction < self.__reproduction_wait:
             return False
 
-        self.__time_without_reproduction = 0
         return True

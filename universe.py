@@ -128,35 +128,43 @@ class Universe(object):
     def count_cicles(self):
         self.__cicles += 1
 
-    def create_creature(self, screen, velocity, sex=None):
+    def create_creature(self, screen, velocity, sex=None, age=None, energy=None):
 
         if not len(self.__food_available_positions) > 0:
             return
 
         x, y = self.get_random_position()
+        creature_id = self.get_id()
 
         while (x, y) not in self.__creatures_available_positions:
             x, y = self.get_random_position()
 
-        id = self.get_id()
-
         if sex:
             new_creature = Creature(x, y, screen.get_width(),
-                                    screen.get_height(), velocity, self.__creatures_size, id, sex)
+                                    screen.get_height(), velocity, self.__creatures_size, creature_id, sex)
         else:
             creature_sex = None
             new_creature = Creature(x, y, screen.get_width(), screen.get_height(),
-                                    velocity, self.__creatures_size, id, creature_sex)
+                                    velocity, self.__creatures_size, creature_id, creature_sex)
 
-        self.__creatures_dict[id] = new_creature
-        self.__position_matrix[x][y] = id
-        self.__population += 1
-        self.__all_time_population += 1
+        if energy:
+            new_creature.set_energy(energy)
 
-        self.__creatures_available_positions.remove((x, y))
+        if age:
+            new_creature.set_age(age)
+
+        self.__save_creature(new_creature, x, y)
 
         if self.__render:
             self.__pg.draw.rect(self.__window, (0, 0, 255), (x, y, 10, 10))
+
+    def __save_creature(self, creature, x, y):
+        creature_id = creature.get_id()
+        self.__creatures_dict[creature_id] = creature
+        self.__position_matrix[x][y] = creature_id
+        self.__population += 1
+        self.__all_time_population += 1
+        self.__creatures_available_positions.remove((x, y))
 
     def create_food(self):
 

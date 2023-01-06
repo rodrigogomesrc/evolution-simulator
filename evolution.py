@@ -59,6 +59,7 @@ class Game(object):
 
         self.__cicle_time = 0
         self.__total_cicle_time = 0
+        self.__creatures_born = 0
 
     def __init_stats(self, numpy_object, pandas_object):
 
@@ -124,8 +125,14 @@ class Game(object):
             Food.determined_duration = config_data['foodDuration']
             self.__consider_sex = config_data['considerTwoSexes']
 
+    def __get_normal_distriution_random_number(self, min_value, max_value):
+        return int((random.uniform(min_value, max_value) + random.uniform(min_value, max_value)) / 2)
+
     def get_cicle_size(self):
         return self.__cicle_size
+
+    def get_born_creatures(self):
+        return self.__creatures_born
 
     def get_simulation_velocity(self):
         return self.__simulation_velocity
@@ -187,13 +194,17 @@ class Game(object):
         print("creating creatures...")
         for i in range(self.__initial_creatures):
             velocity = random.randint(30, 100)
+            # TODO: change later to configurable age and energy
+            energy = self.__get_normal_distriution_random_number(1000, 10000)
+            age = self.__get_normal_distriution_random_number(0, 100)
             if self.__consider_sex:
                 creature_sex = random.randint(0, 1)
-                self.__universe.create_creature(self.__screen, velocity, sex=creature_sex)
+                self.__universe.create_creature(self.__screen, velocity, sex=creature_sex, energy=energy, age=age)
 
             else:
-                self.__universe.create_creature(self.__screen, velocity)
+                self.__universe.create_creature(self.__screen, velocity, energy=energy, age=age)
 
+        print("population", self.__universe.get_population())
         print("food and creatures created, starting simulation..")
         self.__cicle_time = timer()
 
@@ -374,17 +385,36 @@ class Game(object):
         if not creature.check_if_able_to_reproduce():
             return
 
-        # TODO: logic considering sex
-        if self.__consider_sex:
-            return
-
         try:
             creature_to_reproduce = self.__universe.get_creature_by_id(matrix_id)
+            if not creature_to_reproduce.check_if_able_to_reproduce():
+                return
 
         except KeyError:
             return
 
+        if self.__consider_sex:
+            creature1_sex = creature.get_gender()
+            creature2_sex = creature_to_reproduce.get_gender()
+            if creature1_sex != creature2_sex:
+                return
+
         new_velocity = creature.get_velocity() + creature_to_reproduce.get_velocity() / 2
+
+        if self.__consider_sex:
+            given_sex = random.randint(0, 1)
+            if creature.get_gender() == 1:
+                creature.reproduce()
+
+            else:
+                creature_to_reproduce.reproduce()
+
+            self.__universe.create_creature(self.__screen, new_velocity, sex=given_sex)
+            self.__creatures_born += 1
+            return
+
+        self.__creatures_born += 1
+        creature.reproduce()
         self.__universe.create_creature(self.__screen, new_velocity)
 
     def check_food_is_expired(self, food):
@@ -488,9 +518,11 @@ def print_summary(game_obj):
     print("\n===============SUMMARY===============")
     print("Population all times: ", game_obj.get_universe().get_all_time_population())
     print("Population record: ", game_obj.get_population_record())
-    print("Cicles simulated: ", game_obj.get_universe().get_cicles())
-    print("Hungry deaths: ", game_obj.get_hungry_deaths())
-    print("age_deaths: ", game_obj.get_hungry_deaths())
+    print("Simulated cicles: ", game_obj.get_universe().get_cicles())
+    print("Starvation deaths: ", game_obj.get_hungry_deaths())
+    print("Age deaths: ", game_obj.get_age_deaths())
+    print("Final population: ", game_obj.get_universe().get_population())
+    print("Born creatures: ", game_obj.get_born_creatures())
     print("Days simulated: %d" % (game_obj.get_universe().get_cicles() / game_obj.get_cicle_size()))
 
     if render_stats:
