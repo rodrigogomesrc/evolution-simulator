@@ -110,7 +110,8 @@ class Game(object):
             Creature.mutation_range = config_data['mutationRange']
             Creature.min_velocity = config_data['minCreatureVelocity']
             Creature.max_velocity = config_data['maxCreatureVelocity']
-            Creature.velocityCostRate = config_data['velocityCostRate']
+            Creature.velocity_base_cost = config_data['velocityBaseCost']
+            Creature.velocity_cost_rate = config_data['velocityCostRate']
 
             if self.__limit_population:
                 self.__population_limit = config_data['populationLimit']
@@ -202,15 +203,19 @@ class Game(object):
 
     def start_world(self):
 
+        min_velocity = Creature.min_velocity
+        max_velocity = Creature.max_velocity
+        max_energy = Creature.max_energy
+        min_energy = int(max_energy / 5)
+
         print("creating food...")
         for i in range(self.__initial_food):
             self.__universe.create_food()
 
         print("creating creatures...")
         for i in range(self.__initial_creatures):
-            velocity = random.randint(30, 100)
-            max_energy = Creature.max_energy
-            min_energy = int(max_energy / 5)
+
+            velocity = self.__get_normal_distribution_random_number(min_velocity, max_velocity)
             energy = self.__get_normal_distribution_random_number(min_energy, max_energy)
             age = self.__get_normal_distribution_random_number(0, Creature.max_age)
 
@@ -357,42 +362,8 @@ class Game(object):
     def check_creature_proximity(self, creature):
         x = creature.get_x()
         y = creature.get_y()
-
-        if self.check_if_coordenates_inside_screen(x, y):
-            self.handle_creature_close_to_food(creature, x, y)
-            self.check_reproduction(creature, x, y)
-
-        if self.check_if_coordenates_inside_screen(x, y + 1):
-            self.handle_creature_close_to_food(creature, x, y + 1)
-            self.check_reproduction(creature, x, y + 1)
-
-        if self.check_if_coordenates_inside_screen(x, y + -1):
-            self.handle_creature_close_to_food(creature, x, y + -1)
-            self.check_reproduction(creature, x, y - 1)
-
-        if self.check_if_coordenates_inside_screen(x + 1, y):
-            self.handle_creature_close_to_food(creature, x + 1, y)
-            self.check_reproduction(creature, x + 1, y)
-
-        if self.check_if_coordenates_inside_screen(x - 1, y):
-            self.handle_creature_close_to_food(creature, x - 1, y)
-            self.check_reproduction(creature, x - 1, y)
-
-        if self.check_if_coordenates_inside_screen(x - 1, y - 1):
-            self.handle_creature_close_to_food(creature, x - 1, y - 1)
-            self.check_reproduction(creature, x - 1, y - 1)
-
-        if self.check_if_coordenates_inside_screen(x - 1, y + 1):
-            self.handle_creature_close_to_food(creature, x - 1, y + 1)
-            self.check_reproduction(creature, x - 1, y + 1)
-
-        if self.check_if_coordenates_inside_screen(x + 1, y - 1):
-            self.handle_creature_close_to_food(creature, x + 1, y - 1)
-            self.check_reproduction(creature, x + 1, y - 1)
-
-        if self.check_if_coordenates_inside_screen(x - 1, y + 1):
-            self.handle_creature_close_to_food(creature, x - 1, y + 1)
-            self.check_reproduction(creature, x - 1, y + 1)
+        self.handle_creature_close_to_food(creature, x, y)
+        self.check_reproduction(creature, x, y)
 
     def check_reproduction(self, creature, x, y):
 
@@ -451,7 +422,6 @@ class Game(object):
         creatures = self.__universe.get_creature_dict().copy().items()
         for creature_id, creature in creatures:
             self.move_creature(creature, creature_id)
-            self.check_creature_proximity(creature)
 
             if render:
                 self.render_creature(creature)
@@ -459,9 +429,15 @@ class Game(object):
     def move_creature(self, creature, creature_id):
         x = creature.get_x()
         y = creature.get_y()
-        self.__universe.remove_from_creatures_coordenates(x, y)
-        x, y = creature.move()
-        self.__universe.add_to_creatures_coordenates(x, y, creature_id)
+        creature_velocity = creature.get_velocity()
+
+        creature.before_move()
+        for i in range(creature_velocity):
+            self.__universe.remove_from_creatures_coordenates(x, y)
+            x, y = creature.move()
+            self.__universe.add_to_creatures_coordenates(x, y, creature_id)
+            self.check_creature_proximity(creature)
+        creature.after_move()
 
     def loop(self):
         if (game.__universe.get_cicles() % self.__cicle_size) == 0:

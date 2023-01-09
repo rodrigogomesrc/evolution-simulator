@@ -158,6 +158,8 @@ class Universe(object):
         if self.__render:
             self.__pg.draw.rect(self.__window, (0, 0, 255), (x, y, 10, 10))
 
+        return new_creature
+
     def __save_creature(self, creature, x, y):
         creature_id = creature.get_id()
         self.__creatures_dict[creature_id] = creature

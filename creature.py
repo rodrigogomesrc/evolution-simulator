@@ -8,7 +8,8 @@ class Creature(object):
     max_age = None
     min_velocity = None
     max_velocity = None
-    velocityCostRate = None
+    velocity_base_cost = None
+    velocity_cost_rate = None
     reproduction_energy_cost = None
     reproduction_energy_minimum = None
     reproduction_age_start = None
@@ -22,20 +23,15 @@ class Creature(object):
         self.__y = y
         self.__screen_x = screen_x
         self.__screen_y = screen_y
-        self.__original_velocity = velocity
-        self.__velocity = 100 - velocity
+        self.__velocity = velocity
         self.__life = Creature.max_age
         self.__age = 0
         self.__size = size
-        self.__moving = False
-        self.__steps = 0
-        self.__walking_direction = 0
         self.__energy = Creature.max_energy
         self.__energy_max = Creature.max_energy
-        self.__wait_to_velocity = ((100 - velocity) // 10)
+        self.__walking_direction = 0
         self.__idnumber = idnumber
         self.__alive = True
-        self.__cicles = 0
         self.__gender = gender
         self.__time_without_reproduction = 0
         self.__reproduction_wait = 1000
@@ -82,17 +78,19 @@ class Creature(object):
 
         min_life = int(self.__life - self.__life * Creature.mutation_range)
         max_life = int(self.__life + self.__life * Creature.mutation_range)
-        self.__life += int(random.randint(min_life, max_life))
+        self.__life = int(random.randint(min_life, max_life))
 
         min_velocity = int(self.__velocity - self.__velocity * Creature.mutation_range)
         max_velocity = int(self.__velocity + self.__velocity * Creature.mutation_range)
-        self.__velocity += int(random.randint(min_velocity, max_velocity))
+        self.__velocity = int(random.randint(min_velocity, max_velocity))
+        self.__velocity = int(self.__velocity)
 
         if self.__velocity < 0:
             self.__velocity = 0
 
     def __calculate_energy_expended_when_moving(self):
-        return (self.__velocity / 10) + (Creature.velocityCostRate * self.__velocity) ** 2
+        cost = self.velocity_base_cost * self.__velocity
+        return cost + (cost * self.velocity_cost_rate) ** 2
 
     def __init_moving_functions(self):
         self.__moving_functions.append(self.move_up)
@@ -104,30 +102,16 @@ class Creature(object):
         self.__moving_functions.append(self.move_left_up)
         self.__moving_functions.append(self.move_left_down)
 
-    def move(self):
-
-        self.age_creature()
+    def before_move(self):
         self.__use_energy(self.__calculate_energy_expended_when_moving())
-        self.__cicles += 1
+        self.__walking_direction = random.randint(0, 7)
 
-        if self.__wait_to_velocity <= 0:
-            if self.__steps == 0:
-
-                self.__walking_direction = random.randint(0, 7)
-                self.__steps = random.randint(10, 120)
-
-            else:
-                self.__steps -= 1
-
-            moved = self.__moving_functions[self.__walking_direction]()
-
-            if not moved:
-                self.__steps = 0
-
-            self.__wait_to_velocity = ((100 - self.__velocity) % 10)
-
-        self.__wait_to_velocity -= 1
+    def move(self):
+        self.__moving_functions[self.__walking_direction]()
         return self.__x, self.__y
+
+    def after_move(self):
+        self.age()
 
     def get_color(self):
         color = int(2 * self.__original_velocity)
@@ -207,7 +191,7 @@ class Creature(object):
 
         return False
 
-    def age_creature(self):
+    def age(self):
 
         self.__age += 1
 
