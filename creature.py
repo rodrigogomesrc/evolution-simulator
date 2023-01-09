@@ -37,7 +37,6 @@ class Creature(object):
         self.__idnumber = idnumber
         self.__alive = True
         self.__cicles = 0
-        self.__energy_expended = (velocity // 30)
         self.__gender = gender
         self.__time_without_reproduction = 0
         self.__reproduction_wait = 1000
@@ -81,16 +80,11 @@ class Creature(object):
             self.__velocity = 0
 
         min_life = int(self.__life - self.__life * Creature.mutation_range)
-        #print("min life", min_life)
         max_life = int(self.__life + self.__life * Creature.mutation_range)
-        #print("max life", max_life)
         self.__life += int(random.randint(min_life, max_life))
 
-        #print("velocity: ", self.__velocity)
         min_velocity = int(self.__velocity - self.__velocity * Creature.mutation_range)
-        #print("min velocity", min_velocity)
         max_velocity = int(self.__velocity + self.__velocity * Creature.mutation_range)
-        #print("max velocity", max_velocity)
         self.__velocity += int(random.randint(min_velocity, max_velocity))
 
         if self.__velocity < 0:

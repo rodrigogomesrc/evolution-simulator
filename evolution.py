@@ -31,6 +31,7 @@ class Game(object):
         self.__screen = None
         self.__initial_creatures = None
         self.__initial_food = None
+        self.__max_food = None
         self.__cicle_size = None
 
         self.__display_simulation = True
@@ -97,6 +98,7 @@ class Game(object):
             self.__initial_food = config_data['initialFood']
             self.__initial_creatures = config_data['initialCreatures']
             self.__limit_population = config_data['limitPopulation']
+            self.__max_food = config_data['maxFood']
 
             Creature.max_age = config_data['maxCreatureAge']
             Creature.max_energy = config_data['maxCreatureEnergy']
@@ -227,6 +229,8 @@ class Game(object):
         if self.__food_wait <= 0:
             for i in range(self.__food_for_cicle):
                 self.__universe.create_food()
+                if self.__universe.get_food_count() >= self.__max_food:
+                    break
             self.__food_wait = 10
         self.__food_wait -= 1
 
@@ -259,7 +263,6 @@ class Game(object):
 
     def trigger_stats_save(self):
         day = int(game.get_universe().get_cicles() / self.__cicle_size)
-        # the bigger the number, the more it takes to save the stats to file (increasing performance and using more ram)
         if day % 1000 == 0:
             self.save_stats_to_file()
 
