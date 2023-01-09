@@ -4,7 +4,6 @@ from screen_rectangle import ScreenRectangle
 
 
 class Creature(object):
-
     max_energy = None
     max_age = None
     min_velocity = None
@@ -42,10 +41,12 @@ class Creature(object):
         self.__reproduction_wait = 1000
         self.__reproduction_age_start = 2000
         self.__reproduction_age_end = 7000
+        self.__moving_functions = []
 
         self.reproduction_energy_cost = Creature.reproduction_energy_cost
 
         self.mutate()
+        self.__init_moving_functions()
 
     def get_age(self):
         return self.__age
@@ -93,6 +94,16 @@ class Creature(object):
     def __calculate_energy_expended_when_moving(self):
         return (self.__velocity / 10) + (Creature.velocityCostRate * self.__velocity) ** 2
 
+    def __init_moving_functions(self):
+        self.__moving_functions.append(self.move_up)
+        self.__moving_functions.append(self.move_down)
+        self.__moving_functions.append(self.move_right)
+        self.__moving_functions.append(self.move_left)
+        self.__moving_functions.append(self.move_right_up)
+        self.__moving_functions.append(self.move_right_down)
+        self.__moving_functions.append(self.move_left_up)
+        self.__moving_functions.append(self.move_left_down)
+
     def move(self):
 
         self.age_creature()
@@ -100,40 +111,15 @@ class Creature(object):
         self.__cicles += 1
 
         if self.__wait_to_velocity <= 0:
-
-            moved = True
-
             if self.__steps == 0:
 
-                self.__walking_direction = random.randint(1, 9)
+                self.__walking_direction = random.randint(0, 7)
                 self.__steps = random.randint(10, 120)
 
             else:
                 self.__steps -= 1
 
-            if self.__walking_direction == 1:
-                moved = self.move_up()
-
-            if self.__walking_direction == 2:
-                moved = self.move_down()
-
-            if self.__walking_direction == 3:
-                moved = self.move_right()
-
-            if self.__walking_direction == 4:
-                moved = self.move_left()
-
-            if self.__walking_direction == 5:
-                moved = self.move_right_up()
-
-            if self.__walking_direction == 6:
-                moved = self.move_right_down()
-
-            if self.__walking_direction == 7:
-                moved = self.move_left_up()
-
-            if self.__walking_direction == 8:
-                moved = self.move_left_down()
+            moved = self.__moving_functions[self.__walking_direction]()
 
             if not moved:
                 self.__steps = 0
