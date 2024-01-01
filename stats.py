@@ -23,6 +23,7 @@ def plot_all_from_dataframe(df):
     plt.xlabel('Day')
     plt.ylabel('Metrics')
     plt.legend()
+    plt.legend()
     plt.show()
 
 
@@ -35,6 +36,7 @@ def plot_velocity_and_age(filename):
     plt.xlabel('Day')
     plt.ylabel('Average velocities and age')
     plt.legend()
+    plt.grid()
     plt.show()
 
 
@@ -42,10 +44,14 @@ def plot_customized(filename, y_labels):
     df = load_dataframe(filename)
     df.columns = cols
     for y_label in y_labels:
+        if y_label not in cols:
+            raise KeyError
+    for y_label in y_labels:
         plt.plot(df['day'], df[y_label], label=y_label)
     plt.title('Average velocity and age by day')
     plt.xlabel('Day')
     plt.ylabel('Metrics')
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -53,11 +59,32 @@ def plot_customized(filename, y_labels):
 if __name__ == '__main__':
     file = sys.argv[1]
     plot_type = sys.argv[2]
-    if plot_type == 'all':
-        plot_all_stats(file)
+    try:
+        if plot_type == 'all':
+            plot_all_stats(file)
 
-    if plot_type == 'va':
-        plot_velocity_and_age(file)
+        elif plot_type == 'va':
+            plot_velocity_and_age(file)
 
-    if plot_type == 'custom':
-        plot_customized(file, sys.argv[3:])
+        elif plot_type == 'custom':
+            plot_customized(file, sys.argv[3:])
+
+        else:
+            print("Invalid plot type!")
+            print('Usage: python stats.py <filename> <plot_type> <y_labels>')
+            print('Example: python stats.py stats.csv custom population food')
+            print('Example: python stats.py stats.csv va')
+            print('Example: python stats.py stats.csv all')
+
+    except FileNotFoundError as e:
+        print("File not found!")
+
+    except KeyError as e:
+        print("Invalid label. Metric specified was not found!")
+
+    except Exception as e:
+        print("Something went wrong. Check your arguments!")
+        print('Usage: python stats.py <filename> <plot_type> <y_labels>')
+        print('Example: python stats.py stats.csv custom population food')
+        print('Example: python stats.py stats.csv va')
+        print('Example: python stats.py stats.csv all')
