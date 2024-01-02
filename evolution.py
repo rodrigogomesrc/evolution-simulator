@@ -108,8 +108,8 @@ class Game(object):
             Creature.reproduction_age_start = config_data['reproductionAgeStart']
             Creature.reproduction_age_end = config_data['reproductionAgeEnd']
             Creature.mutation_range = config_data['mutationRange']
-            Creature.min_velocity = config_data['minCreatureVelocity']
-            Creature.max_velocity = config_data['maxCreatureVelocity']
+            Creature.min_velocity = config_data['minCreatureStartVelocity']
+            Creature.max_velocity = config_data['maxCreatureStartVelocity']
             Creature.velocity_base_cost = config_data['velocityBaseCost']
             Creature.velocity_cost_rate = config_data['velocityCostRate']
 
