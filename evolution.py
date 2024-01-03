@@ -44,8 +44,6 @@ class Game(object):
         self.__day_velocities_native = []
         self.__day_ages_native = []
 
-        self.__load_configs()
-
         self.__population_record = 0
         self.__hungry_deaths = 0
         self.__age_deaths = 0
@@ -55,6 +53,11 @@ class Game(object):
         self.__day_velocities = None
         self.__day_ages = None
         self.__simulation_velocity = None
+
+        self.__restart_world = None
+        self.__last_creature = None
+
+        self.__load_configs()
 
         self.__init_pygame(pygame_object)
         self.__init_stats(numpy_object, pandas_object)
@@ -99,6 +102,7 @@ class Game(object):
             self.__initial_creatures = config_data['initialCreatures']
             self.__limit_population = config_data['limitPopulation']
             self.__max_food = config_data['maxFood']
+            self.__restart_world = config_data['restartWithLastPopulation']
 
             Creature.max_age = config_data['maxCreatureAge']
             Creature.max_energy = config_data['maxCreatureEnergy']
@@ -230,6 +234,30 @@ class Game(object):
         print("food and creatures created, starting simulation..")
         self.__cicle_time = timer()
 
+    def restart_world_like_last_creature(self):
+
+        # TODO: clear variables of creatures and food
+
+        restart_velocity = self.__last_creature.get_velocity()
+        # restart_size = self.__last_creature.get_size()
+        print("restarting world")
+
+        print("creating food...")
+        for i in range(self.__initial_food):
+            self.__universe.create_food()
+
+        print("creating creatures...")
+        for i in range(self.__initial_creatures):
+            if self.__consider_sex:
+                creature_sex = random.randint(0, 1)
+                self.__universe.create_creature(self.__screen, restart_velocity, sex=creature_sex)
+
+            else:
+                self.__universe.create_creature(self.__screen, restart_velocity)
+
+        print("food and creatures created, restarting simulation..")
+        self.__cicle_time = timer()
+
     def spawn_food(self):
         if self.__food_wait <= 0:
             for i in range(self.__food_for_cicle):
@@ -248,6 +276,9 @@ class Game(object):
             self.__population_record = self.__universe.get_population()
 
         if self.__universe.get_population() == 0:
+            if self.__restart_world:
+                self.restart_world_like_last_creature()
+                return
             self.__extinction = True
 
     def daily_checks(self):
@@ -318,6 +349,7 @@ class Game(object):
             self.check_food_is_expired(food)
 
     def remove_creature(self, creature):
+        self.__last_creature = creature
         self.__universe.remove_creature(creature)
 
     def counters(self):
