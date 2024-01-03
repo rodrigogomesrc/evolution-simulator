@@ -20,6 +20,16 @@ To run the simulation, run the `evolution.py` file:
 python3 evolution.py
 ```
 
+You can also run about 6 times faster using the **pypy3** interpreter:
+
+```bash
+pypy3 evolution.py
+```
+Note: 
+
+The simulation may be a little bit different using pypy3. For some reason using pypy the population will go extinct prematurely way easier.
+For now, it doesn't work trying to display the simulation using pypy3. There may be some problems with pygame and pypy3.
+
 ## Displaying the results
 
 To display the results, there's a file name **stats.py**.
