@@ -6,6 +6,7 @@ from food import Food
 from timeit import default_timer as timer
 from stats_io import clear_file
 from stats_io import append_csv_from_list
+from creature import Creature
 import json
 
 import warnings
@@ -26,9 +27,11 @@ class Game(object):
 
         self.__consider_sex = False
         self.__food_wait = None
+        self.__food_for_cicle = None
         self.__screen = None
         self.__initial_creatures = None
         self.__initial_food = None
+        self.__max_food = None
         self.__cicle_size = None
 
         self.__display_simulation = True
@@ -58,6 +61,7 @@ class Game(object):
 
         self.__cicle_time = 0
         self.__total_cicle_time = 0
+        self.__creatures_born = 0
 
     def __init_stats(self, numpy_object, pandas_object):
 
@@ -94,6 +98,20 @@ class Game(object):
             self.__initial_food = config_data['initialFood']
             self.__initial_creatures = config_data['initialCreatures']
             self.__limit_population = config_data['limitPopulation']
+            self.__max_food = config_data['maxFood']
+
+            Creature.max_age = config_data['maxCreatureAge']
+            Creature.max_energy = config_data['maxCreatureEnergy']
+            Creature.reproduction_energy_cost = config_data['reproductionEnergyCost']
+            Creature.food_energy = config_data['foodEnergy']
+            Creature.reproduction_energy_minimum = config_data['reproductionEnergyMinimum']
+            Creature.reproduction_age_start = config_data['reproductionAgeStart']
+            Creature.reproduction_age_end = config_data['reproductionAgeEnd']
+            Creature.mutation_range = config_data['mutationRange']
+            Creature.min_velocity = config_data['minCreatureStartVelocity']
+            Creature.max_velocity = config_data['maxCreatureStartVelocity']
+            Creature.velocity_base_cost = config_data['velocityBaseCost']
+            Creature.velocity_cost_rate = config_data['velocityCostRate']
 
             if self.__limit_population:
                 self.__population_limit = config_data['populationLimit']
@@ -119,11 +137,18 @@ class Game(object):
                 self.__save_stats = False
 
             self.__food_wait = config_data['ciclesToSpawnFood']
+            self.__food_for_cicle = config_data['foodForSpawn']
             Food.determined_duration = config_data['foodDuration']
             self.__consider_sex = config_data['considerTwoSexes']
 
+    def __get_normal_distribution_random_number(self, min_value, max_value):
+        return int((random.uniform(min_value, max_value) + random.uniform(min_value, max_value)) / 2)
+
     def get_cicle_size(self):
         return self.__cicle_size
+
+    def get_born_creatures(self):
+        return self.__creatures_born
 
     def get_simulation_velocity(self):
         return self.__simulation_velocity
@@ -178,26 +203,39 @@ class Game(object):
 
     def start_world(self):
 
+        min_velocity = Creature.min_velocity
+        max_velocity = Creature.max_velocity
+        max_energy = Creature.max_energy
+        min_energy = int(max_energy / 5)
+
         print("creating food...")
         for i in range(self.__initial_food):
             self.__universe.create_food()
 
         print("creating creatures...")
         for i in range(self.__initial_creatures):
-            velocity = random.randint(30, 100)
+
+            velocity = self.__get_normal_distribution_random_number(min_velocity, max_velocity)
+            energy = self.__get_normal_distribution_random_number(min_energy, max_energy)
+            age = self.__get_normal_distribution_random_number(0, Creature.max_age)
+
             if self.__consider_sex:
                 creature_sex = random.randint(0, 1)
-                self.__universe.create_creature(self.__screen, velocity, sex=creature_sex)
+                self.__universe.create_creature(self.__screen, velocity, sex=creature_sex, energy=energy, age=age)
 
             else:
-                self.__universe.create_creature(self.__screen, velocity)
+                self.__universe.create_creature(self.__screen, velocity, energy=energy, age=age)
 
+        print("population", self.__universe.get_population())
         print("food and creatures created, starting simulation..")
         self.__cicle_time = timer()
 
     def spawn_food(self):
         if self.__food_wait <= 0:
-            self.__universe.create_food()
+            for i in range(self.__food_for_cicle):
+                self.__universe.create_food()
+                if self.__universe.get_food_count() >= self.__max_food:
+                    break
             self.__food_wait = 10
         self.__food_wait -= 1
 
@@ -230,7 +268,6 @@ class Game(object):
 
     def trigger_stats_save(self):
         day = int(game.get_universe().get_cicles() / self.__cicle_size)
-        # the bigger the number, the more it takes to save the stats to file (increasing performance and using more ram)
         if day % 1000 == 0:
             self.save_stats_to_file()
 
@@ -325,42 +362,8 @@ class Game(object):
     def check_creature_proximity(self, creature):
         x = creature.get_x()
         y = creature.get_y()
-
-        if self.check_if_coordenates_inside_screen(x, y):
-            self.handle_creature_close_to_food(creature, x, y)
-            self.check_reproduction(creature, x, y)
-
-        if self.check_if_coordenates_inside_screen(x, y + 1):
-            self.handle_creature_close_to_food(creature, x, y + 1)
-            self.check_reproduction(creature, x, y + 1)
-
-        if self.check_if_coordenates_inside_screen(x, y + -1):
-            self.handle_creature_close_to_food(creature, x, y + -1)
-            self.check_reproduction(creature, x, y - 1)
-
-        if self.check_if_coordenates_inside_screen(x + 1, y):
-            self.handle_creature_close_to_food(creature, x + 1, y)
-            self.check_reproduction(creature, x + 1, y)
-
-        if self.check_if_coordenates_inside_screen(x - 1, y):
-            self.handle_creature_close_to_food(creature, x - 1, y)
-            self.check_reproduction(creature, x - 1, y)
-
-        if self.check_if_coordenates_inside_screen(x - 1, y - 1):
-            self.handle_creature_close_to_food(creature, x - 1, y - 1)
-            self.check_reproduction(creature, x - 1, y - 1)
-
-        if self.check_if_coordenates_inside_screen(x - 1, y + 1):
-            self.handle_creature_close_to_food(creature, x - 1, y + 1)
-            self.check_reproduction(creature, x - 1, y + 1)
-
-        if self.check_if_coordenates_inside_screen(x + 1, y - 1):
-            self.handle_creature_close_to_food(creature, x + 1, y - 1)
-            self.check_reproduction(creature, x + 1, y - 1)
-
-        if self.check_if_coordenates_inside_screen(x - 1, y + 1):
-            self.handle_creature_close_to_food(creature, x - 1, y + 1)
-            self.check_reproduction(creature, x - 1, y + 1)
+        self.handle_creature_close_to_food(creature, x, y)
+        self.check_reproduction(creature, x, y)
 
     def check_reproduction(self, creature, x, y):
 
@@ -371,17 +374,36 @@ class Game(object):
         if not creature.check_if_able_to_reproduce():
             return
 
-        # TODO: logic considering sex
-        if self.__consider_sex:
-            return
-
         try:
             creature_to_reproduce = self.__universe.get_creature_by_id(matrix_id)
+            if not creature_to_reproduce.check_if_able_to_reproduce():
+                return
 
         except KeyError:
             return
 
+        if self.__consider_sex:
+            creature1_sex = creature.get_gender()
+            creature2_sex = creature_to_reproduce.get_gender()
+            if creature1_sex != creature2_sex:
+                return
+
         new_velocity = creature.get_velocity() + creature_to_reproduce.get_velocity() / 2
+
+        if self.__consider_sex:
+            given_sex = random.randint(0, 1)
+            if creature.get_gender() == 1:
+                creature.reproduce()
+
+            else:
+                creature_to_reproduce.reproduce()
+
+            self.__universe.create_creature(self.__screen, new_velocity, sex=given_sex)
+            self.__creatures_born += 1
+            return
+
+        self.__creatures_born += 1
+        creature.reproduce()
         self.__universe.create_creature(self.__screen, new_velocity)
 
     def check_food_is_expired(self, food):
@@ -400,7 +422,6 @@ class Game(object):
         creatures = self.__universe.get_creature_dict().copy().items()
         for creature_id, creature in creatures:
             self.move_creature(creature, creature_id)
-            self.check_creature_proximity(creature)
 
             if render:
                 self.render_creature(creature)
@@ -408,9 +429,15 @@ class Game(object):
     def move_creature(self, creature, creature_id):
         x = creature.get_x()
         y = creature.get_y()
-        self.__universe.remove_from_creatures_coordenates(x, y)
-        x, y = creature.move()
-        self.__universe.add_to_creatures_coordenates(x, y, creature_id)
+        creature_velocity = creature.get_velocity()
+
+        creature.before_move()
+        for i in range(creature_velocity):
+            self.__universe.remove_from_creatures_coordenates(x, y)
+            x, y = creature.move()
+            self.__universe.add_to_creatures_coordenates(x, y, creature_id)
+            self.check_creature_proximity(creature)
+        creature.after_move()
 
     def loop(self):
         if (game.__universe.get_cicles() % self.__cicle_size) == 0:
@@ -430,6 +457,9 @@ class Game(object):
 
         print("Population: ", self.__universe.get_population())
         print("Food: ", self.__universe.get_food_count())
+        print("Age deaths: ", self.get_age_deaths())
+        print("Starvation deaths: ", self.get_hungry_deaths())
+        print("Creatures Born: ", self.__creatures_born)
         print("Day: %d" % day)
 
         print("Time taken to simulate day (s): %.5f" % self.__total_cicle_time)
@@ -485,9 +515,11 @@ def print_summary(game_obj):
     print("\n===============SUMMARY===============")
     print("Population all times: ", game_obj.get_universe().get_all_time_population())
     print("Population record: ", game_obj.get_population_record())
-    print("Cicles simulated: ", game_obj.get_universe().get_cicles())
-    print("Hungry deaths: ", game_obj.get_hungry_deaths())
-    print("age_deaths: ", game_obj.get_hungry_deaths())
+    print("Simulated cicles: ", game_obj.get_universe().get_cicles())
+    print("Starvation deaths: ", game_obj.get_hungry_deaths())
+    print("Age deaths: ", game_obj.get_age_deaths())
+    print("Final population: ", game_obj.get_universe().get_population())
+    print("Born creatures: ", game_obj.get_born_creatures())
     print("Days simulated: %d" % (game_obj.get_universe().get_cicles() / game_obj.get_cicle_size()))
 
     if render_stats:
