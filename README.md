@@ -28,7 +28,7 @@ pypy3 evolution.py
 Note: 
 
 The simulation may be a little bit different using pypy3. For some reason using pypy the population will go extinct prematurely way easier.
-For now, it doesn't work trying to display the simulation using pypy3. There may be some problems with pygame and pypy3.
+For now, it doesn't work trying to display the simulation using pypy3. Because I couldn't manage to install pygame on pypy3.
 
 ## Displaying the results
 

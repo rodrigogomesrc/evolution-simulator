@@ -24,6 +24,7 @@ class Creature(object):
         self.__screen_x = screen_x
         self.__screen_y = screen_y
         self.__velocity = velocity
+        self.__original_velocity = velocity
         self.__life = Creature.max_age
         self.__age = 0
         self.__size = size
