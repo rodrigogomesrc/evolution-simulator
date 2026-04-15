@@ -3,7 +3,7 @@
     "ciclesToSpawnFood": 1,
     "considerTwoSexes": true,
     "daysLimit": 600,
-    "displaySimulation": true,
+    "displaySimulation": false,
     "foodDuration": 10,
     "foodEnergy": 500,
     "foodForSpawn": 1,

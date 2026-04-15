@@ -196,14 +196,28 @@ class Game(object):
         return x, y
 
     def render_rood(self, food):
-        rectangle = food.get_screen_rectangle()
-        color = food.get_color_object()
-        self.__screen.render_rectangle(self.__window, rectangle, color)
+        self.__screen.render_rectangle_raw(
+            self.__window,
+            food.get_x_position(),
+            food.get_y_position(),
+            10,
+            10,
+            0,
+            255,
+            0,
+        )
 
     def render_creature(self, creature):
-        rectangle = creature.get_screen_rectangle()
-        color = creature.get_color_object()
-        self.__screen.render_rectangle(self.__window, rectangle, color)
+        self.__screen.render_rectangle_raw(
+            self.__window,
+            creature.get_x(),
+            creature.get_y(),
+            10,
+            10,
+            creature.get_color(),
+            0,
+            255,
+        )
 
     def start_world(self):
 
