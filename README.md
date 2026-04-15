@@ -12,6 +12,22 @@ To tweak the environment parameters, edit the `config.json` file.
 You can display the simulation using pygame. To do so, set `display` to `true` in the `config.json` file. But that makes
 it run slower.
 
+## Setting up the environment
+
+First-time setup only. You only need to do this once:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+After the initial setup, you just need to activate the virtual environment:
+
+```bash
+source venv/bin/activate
+```
+
 ## Running the simulation
 
 To run the simulation, run the `evolution.py` file:
