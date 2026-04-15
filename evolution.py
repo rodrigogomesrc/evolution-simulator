@@ -235,8 +235,7 @@ class Game(object):
         self.__cicle_time = timer()
 
     def restart_world_like_last_creature(self):
-
-        # TODO: clear variables of creatures and food
+        self.__universe.clear_world()
 
         restart_velocity = self.__last_creature.get_velocity()
         # restart_size = self.__last_creature.get_size()
@@ -272,10 +271,10 @@ class Game(object):
         self.counters()
         self.check_creatures()
 
-        if self.__universe.get_population() > self.__population_record:
-            self.__population_record = self.__universe.get_population()
+        if (population := self.__universe.get_population()) > self.__population_record:
+            self.__population_record = population
 
-        if self.__universe.get_population() == 0:
+        if population == 0:
             if self.__restart_world:
                 self.restart_world_like_last_creature()
                 return
@@ -536,7 +535,7 @@ run = True
 
 def stop_execution(game_obj):
     if limit_execution:
-        if game_obj.get_universe().get_cicles() > execution_limit * game_obj.get_cicle_size():
+        if (cicles := game_obj.get_universe().get_cicles()) > execution_limit * game_obj.get_cicle_size():
             return True
     if game_obj.get_extinction():
         return True
