@@ -61,12 +61,6 @@ class Universe(object):
     def get_creature_dict(self):
         return self.__creatures_dict
 
-    def get_population(self):
-        return self.__population
-
-    def get_food_count(self):
-        return self.__food_count
-
     def init_available_positions(self):
         for x in range(self.__screen.get_width()):
             for y in range(self.__screen.get_height()):
@@ -127,6 +121,16 @@ class Universe(object):
 
     def count_cicles(self):
         self.__cicles += 1
+
+    def clear_world(self):
+        self.__creatures_dict.clear()
+        self.__food_dict.clear()
+        self.__population = 0
+        self.__food_count = 0
+        self.init_matrix()
+        self.__creatures_available_positions.clear()
+        self.__food_available_positions.clear()
+        self.init_available_positions()
 
     def create_creature(self, screen, velocity, sex=None, age=None, energy=None):
 

@@ -196,14 +196,28 @@ class Game(object):
         return x, y
 
     def render_rood(self, food):
-        rectangle = food.get_screen_rectangle()
-        color = food.get_color_object()
-        self.__screen.render_rectangle(self.__window, rectangle, color)
+        self.__screen.render_rectangle_raw(
+            self.__window,
+            food.get_x_position(),
+            food.get_y_position(),
+            10,
+            10,
+            0,
+            255,
+            0,
+        )
 
     def render_creature(self, creature):
-        rectangle = creature.get_screen_rectangle()
-        color = creature.get_color_object()
-        self.__screen.render_rectangle(self.__window, rectangle, color)
+        self.__screen.render_rectangle_raw(
+            self.__window,
+            creature.get_x(),
+            creature.get_y(),
+            10,
+            10,
+            creature.get_color(),
+            0,
+            255,
+        )
 
     def start_world(self):
 
@@ -235,8 +249,7 @@ class Game(object):
         self.__cicle_time = timer()
 
     def restart_world_like_last_creature(self):
-
-        # TODO: clear variables of creatures and food
+        self.__universe.clear_world()
 
         restart_velocity = self.__last_creature.get_velocity()
         # restart_size = self.__last_creature.get_size()
@@ -272,10 +285,10 @@ class Game(object):
         self.counters()
         self.check_creatures()
 
-        if self.__universe.get_population() > self.__population_record:
-            self.__population_record = self.__universe.get_population()
+        if (population := self.__universe.get_population()) > self.__population_record:
+            self.__population_record = population
 
-        if self.__universe.get_population() == 0:
+        if population == 0:
             if self.__restart_world:
                 self.restart_world_like_last_creature()
                 return
@@ -536,7 +549,7 @@ run = True
 
 def stop_execution(game_obj):
     if limit_execution:
-        if game_obj.get_universe().get_cicles() > execution_limit * game_obj.get_cicle_size():
+        if (cicles := game_obj.get_universe().get_cicles()) > execution_limit * game_obj.get_cicle_size():
             return True
     if game_obj.get_extinction():
         return True

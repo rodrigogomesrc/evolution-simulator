@@ -20,3 +20,9 @@ class Screen(object):
         x, y = screen_rectangle.get_position()
         h, w = screen_rectangle.get_size()
         self.__pg.draw.rect(window, (r, g, b), (x, y, h, w))
+
+    def render_rectangle_raw(self, window, x, y, h, w, r, g, b):
+        if window is None or self.__pg is None:
+            return
+
+        self.__pg.draw.rect(window, (r, g, b), (x, y, h, w))

@@ -39,6 +39,8 @@ class Creature(object):
         self.__reproduction_age_start = 2000
         self.__reproduction_age_end = 7000
         self.__moving_functions = []
+        self.__last_velocity_cost = None
+        self.__last_velocity_used_for_cost = None
 
         self.reproduction_energy_cost = Creature.reproduction_energy_cost
 
@@ -93,6 +95,12 @@ class Creature(object):
         cost = self.velocity_base_cost * self.__velocity
         return cost + (cost * self.velocity_cost_rate) ** 2
 
+    def __get_cached_energy_expended_when_moving(self):
+        if self.__last_velocity_used_for_cost != self.__velocity:
+            self.__last_velocity_cost = self.__calculate_energy_expended_when_moving()
+            self.__last_velocity_used_for_cost = self.__velocity
+        return self.__last_velocity_cost
+
     def __init_moving_functions(self):
         self.__moving_functions.append(self.move_up)
         self.__moving_functions.append(self.move_down)
@@ -104,7 +112,7 @@ class Creature(object):
         self.__moving_functions.append(self.move_left_down)
 
     def before_move(self):
-        self.__use_energy(self.__calculate_energy_expended_when_moving())
+        self.__use_energy(self.__get_cached_energy_expended_when_moving())
         self.__walking_direction = random.randint(0, 7)
 
     def move(self):
